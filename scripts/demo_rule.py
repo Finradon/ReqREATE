@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import networkx as nx
 
+from reqre.cypher import rule_to_cypher
 from reqre.rules import DpoRule, add_edge, add_node
 
 
@@ -13,12 +14,12 @@ def build_demo_rule() -> DpoRule:
     interface = nx.MultiDiGraph()
     right = nx.MultiDiGraph()
 
-    add_node(left, "l1", label="Requirement", props={"id": "REQ-1"})
-    add_node(interface, "k1", label="Requirement", props={"id": "REQ-1"})
-    add_node(right, "r1", label="Requirement", props={"id": "REQ-1"})
-    add_node(right, "r2", label="Component", props={"name": "Beam"})
+    add_node(left, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(interface, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(right, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(right, "comp1", label="Component", props={"name": "Beam"})
 
-    add_edge(right, "r1", "r2", rel_type="SATISFIES")
+    add_edge(right, "req1", "comp1", rel_type="SATISFIES")
 
     return DpoRule(left=left, interface=interface, right=right)
 
@@ -43,6 +44,12 @@ def main() -> None:
     describe_graph("K", rule.interface)
     print("")
     describe_graph("R", rule.right)
+    print("")
+
+    cypher = rule_to_cypher(rule)
+    print("Cypher query:")
+    print(cypher.query)
+    print("Cypher params:", cypher.params)
 
 
 if __name__ == "__main__":

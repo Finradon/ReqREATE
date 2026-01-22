@@ -8,12 +8,12 @@ def test_dpo_rule_summary_counts() -> None:
     interface = nx.MultiDiGraph()
     right = nx.MultiDiGraph()
 
-    add_node(left, "l1", label="Requirement", props={"id": "REQ-1"})
-    add_node(interface, "k1", label="Requirement", props={"id": "REQ-1"})
-    add_node(right, "r1", label="Requirement", props={"id": "REQ-1"})
-    add_node(right, "r2", label="Component", props={"name": "Beam"})
+    add_node(left, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(interface, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(right, "req1", label="Requirement", props={"id": "REQ-1"})
+    add_node(right, "comp1", label="Component", props={"name": "Beam"})
 
-    add_edge(right, "r1", "r2", rel_type="SATISFIES")
+    add_edge(right, "req1", "comp1", rel_type="SATISFIES")
 
     rule = DpoRule(left=left, interface=interface, right=right)
 

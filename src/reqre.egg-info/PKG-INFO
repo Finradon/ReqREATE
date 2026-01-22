@@ -78,19 +78,33 @@ pip install -e .
 ```python
 import networkx as nx
 
+from reqre.cypher import rule_to_cypher
 from reqre.rules import DpoRule, add_edge, add_node
 
 left = nx.MultiDiGraph()
 interface = nx.MultiDiGraph()
 right = nx.MultiDiGraph()
 
-add_node(left, "l1", label="Requirement", props={"id": "REQ-1"})
-add_node(interface, "k1", label="Requirement", props={"id": "REQ-1"})
-add_node(right, "r1", label="Requirement", props={"id": "REQ-1"})
-add_node(right, "r2", label="Component", props={"name": "Beam"})
+add_node(left, "req1", label="Requirement", props={"id": "REQ-1"})
+add_node(interface, "req1", label="Requirement", props={"id": "REQ-1"})
+add_node(right, "req1", label="Requirement", props={"id": "REQ-1"})
+add_node(right, "comp1", label="Component", props={"name": "Beam"})
 
-add_edge(right, "r1", "r2", rel_type="SATISFIES")
+add_edge(right, "req1", "comp1", rel_type="SATISFIES")
 
 rule = DpoRule(left=left, interface=interface, right=right)
+cypher = rule_to_cypher(rule)
+
 print(rule.summary())
+print(cypher.query)
+print(cypher.params)
 ```
+
+## Cypher Serialization Notes
+
+- Create-only rules: left and interface graphs must match; deletions are rejected.
+- Interface nodes must exist in the right graph; right may add nodes/edges.
+- Use consistent node IDs for preserved elements across L, K, and R.
+- Node `label` and edge `type` must be valid Cypher identifiers.
+- `props` must be a mapping with string keys; values are parameterized.
+- Relationship types are required for created edges; missing types on the LHS mean "match any type."
