@@ -41,6 +41,7 @@ class _ParamBuilder:
         self.params: dict[str, Any] = {}
 
     def add(self, scope: str, key: str, value: Any) -> str:
+        # Generate stable, collision-free parameter names for Cypher.
         scope_clean = _sanitize_identifier(scope)
         key_clean = _sanitize_identifier(key)
         base = "_".join(part for part in (scope_clean, key_clean) if part)
@@ -59,6 +60,7 @@ def rule_to_cypher(rule: DpoRule) -> CypherQuery:
     """Serialize a create-only DPO rule into Cypher."""
     plan = _build_plan(rule)
 
+    # Node variables must be consistent across MATCH and CREATE clauses.
     used_vars: set[str] = set()
     node_vars: dict[Any, str] = {}
     for node_id in _sorted_nodes(rule.left):
@@ -91,6 +93,7 @@ def _build_plan(rule: DpoRule) -> _RulePlan:
     interface_nodes = set(rule.interface.nodes)
     right_nodes = set(rule.right.nodes)
 
+    # Create-only: left and interface must match (no deletions).
     if interface_nodes != left_nodes:
         missing = left_nodes - interface_nodes
         if missing:
@@ -111,6 +114,7 @@ def _build_plan(rule: DpoRule) -> _RulePlan:
             f"Missing from right: {sorted(extra, key=str)}"
         )
 
+    # Enforce edge preservation with a multiset comparison (MultiDiGraph support).
     left_edges = _edge_multiset(rule.left, context="left")
     interface_edges = _edge_multiset(rule.interface, context="interface")
     if left_edges != interface_edges:
@@ -145,6 +149,7 @@ def _build_match_patterns(
 ) -> list[str]:
     patterns: list[str] = []
 
+    # Match nodes first, then relationships to anchor the pattern.
     for node_id in _sorted_nodes(graph):
         data = graph.nodes[node_id]
         patterns.append(_node_pattern(node_id, data, node_vars, params, "left"))
@@ -247,6 +252,7 @@ def _edge_pattern(
     source_var = node_vars[edge.source]
     target_var = node_vars[edge.target]
     edge_context = f"{context} edge {edge.source}->{edge.target}"
+    # CREATE requires explicit relationship types; MATCH may omit to allow any.
     rel_type = _normalize_rel_type(
         edge.data.get("type"), required=require_type, context=edge_context
     )
@@ -345,11 +351,13 @@ def _validate_identifier(kind: str, value: str, *, context: str) -> None:
 
 
 def _sanitize_identifier(value: str) -> str:
+    # Normalize user-provided identifiers into safe Cypher tokens.
     cleaned = re.sub(r"[^A-Za-z0-9_]+", "_", value)
     return cleaned.strip("_").lower()
 
 
 def _make_node_var(node_id: Any, used: set[str]) -> str:
+    # Derive readable variable names from node IDs, with deduping.
     base = f"n_{_sanitize_identifier(str(node_id))}" or "n"
     if base == "n_":
         base = "n"

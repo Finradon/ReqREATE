@@ -7,6 +7,7 @@ from typing import Any, Mapping, MutableMapping, Optional
 
 import networkx as nx
 
+# Shared type alias used across rule/matching/serialization modules.
 RuleGraph = nx.MultiDiGraph
 
 
@@ -19,6 +20,7 @@ def add_node(
 ) -> None:
     """Add a node with standard label/props attributes."""
     attributes: MutableMapping[str, Any] = {}
+    # Keep a consistent attribute schema for serialization/matching.
     if label is not None:
         attributes["label"] = label
     if props:
@@ -37,6 +39,7 @@ def add_edge(
 ) -> None:
     """Add an edge with standard type/props attributes."""
     attributes: MutableMapping[str, Any] = {}
+    # Relationship type and props are used by the Cypher serializer.
     if rel_type is not None:
         attributes["type"] = rel_type
     if props:
@@ -46,7 +49,10 @@ def add_edge(
 
 @dataclass(frozen=True)
 class DpoRule:
-    """DPO rule represented as (L, K, R) graphs."""
+    """DPO rule represented as (L, K, R) graphs.
+
+    Preserved elements should keep the same node IDs across L/K/R.
+    """
 
     left: RuleGraph
     interface: RuleGraph
