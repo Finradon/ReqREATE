@@ -5,7 +5,12 @@ This repository is currently minimal and focused on the core concept in `README.
 
 ## Build, Test, and Development Commands
 - `python -m venv .venv` then `source .venv/bin/activate`: create and activate a local virtual environment.
-- `pip install -r requirements.txt`: install runtime and test dependencies (`networkx`, `neo4j`, `pytest`).
+- Install Gaphor system dependencies (for Gaphor import support):
+  - Debian/Ubuntu: `sudo apt install libcairo2-dev pkg-config python3-dev libgirepository1.0-dev libgtk-4-dev gir1.2-pango-1.0 libgtksourceview-5-dev gir1.2-adw-1`
+  - Fedora: `sudo dnf install cairo-devel pkgconf-pkg-config python3-devel gobject-introspection-devel gtk4-devel pango-devel gtksourceview5-devel libadwaita-devel`
+  - Arch: `sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gtksourceview5 libadwaita`
+- `pip install -r requirements.txt`: install runtime and test dependencies (`networkx`, `neo4j`, `pytest`, `gaphor`).
+- `gaphor install-schemas`: run once after installing `requirements.txt`.
 - `pytest`: run the test suite once tests exist.
 
 ## Coding Style & Naming Conventions

@@ -132,6 +132,60 @@ loaded_rule = import_rule_graphml("rule.graphml")
 GraphML stores rule membership per node/edge using metadata, and `props` are
 encoded as JSON strings for portability.
 
+## Gaphor Requirements Import
+
+You can load SysML requirements from a `.gaphor` model and push them to Neo4j:
+
+```python
+from reqre.gaphor_requirements import (
+    load_requirements_from_file,
+    push_requirements_to_neo4j,
+)
+from reqre.neo4j import Neo4jClient
+
+requirements = load_requirements_from_file("gaphor_files/ArchBridgeRequirements.gaphor")
+with Neo4jClient() as client:
+    push_requirements_to_neo4j(client, requirements)
+```
+
+Only `SysML:Requirement` elements are imported; diagram presentation items are ignored.
+
+### Gaphor System Dependencies
+
+Before installing `requirements.txt`, install the system packages needed by Gaphor:
+
+Debian/Ubuntu:
+
+```bash
+sudo apt install libcairo2-dev pkg-config python3-dev libgirepository1.0-dev libgtk-4-dev gir1.2-pango-1.0 libgtksourceview-5-dev gir1.2-adw-1
+```
+
+Fedora:
+
+```bash
+sudo dnf install cairo-devel pkgconf-pkg-config python3-devel gobject-introspection-devel gtk4-devel pango-devel gtksourceview5-devel libadwaita-devel
+```
+
+Arch:
+
+```bash
+sudo pacman -S --needed \
+  cairo \
+  pkgconf \
+  python \
+  gobject-introspection \
+  gtk4 \
+  pango \
+  gtksourceview5 \
+  libadwaita
+```
+
+After installing `requirements.txt`, run:
+
+```bash
+gaphor install-schemas
+```
+
 ## Cypher Serialization Notes
 
 - Create-only rules: left and interface graphs must match; deletions are rejected.
