@@ -1,17 +1,17 @@
 # ReqRE - Requirements Rewriting Engine
-A driver for graph rewriting in a Neo4j Database based on SysML requirements. 
+A driver for graph rewriting in a [Neo4j](https://neo4j.com/) database based on [SysML](https://www.omg.org/spec/SysML/) requirements.
 
 ## Purpose
 
-This software is for locally defining graph rewriting rules using the python networkx library, based on locally defined SysML requirements. Intened use is the formalization of design automation in modular bridge design (using concrete modules).
+This software is for locally defining graph rewriting rules using the Python [NetworkX](https://networkx.org/) library, based on locally defined SysML requirements. Intended use is the formalization of design automation in modular bridge design (using concrete modules).
 
-The requirements always represent the LHS of the rules. Based on a pattern of requirements, the graph is rewritten to satisfy said requirements. This may be a simple subgraph of building components or more intricate rewriting processes.
+The requirements always represent the LHS of the rules. Based on a pattern of requirements, the graph is rewritten to satisfy those requirements. This may be a simple subgraph of building components or more intricate rewriting processes.
 
-The Rules are stored as networkx.MultiDiGraphs, and are then intended to be serialized into cypher. The resulting cypher query can then be used to enact these changes in the neo4j graph database. 
+The rules are stored as `networkx.MultiDiGraph` objects and are then intended to be serialized into [Cypher](https://neo4j.com/developer/cypher/). The resulting Cypher query can then be used to enact these changes in the Neo4j graph database.
 
 ## Workflow (Rule Application)
 
-* Rule = (L,K,R) each as networkx.MultiDiGraph
+* Rule = (L, K, R), each as `networkx.MultiDiGraph`
 
 * match(rule, host_graph) -> Match
 
@@ -20,3 +20,60 @@ The Rules are stored as networkx.MultiDiGraphs, and are then intended to be seri
 * delta_to_cypher(delta) -> (query, params)
 
 * run(query, params)
+
+## Prototype Steps (Basic)
+
+1. Define a minimal data model for rules and matches.
+   - Represent each rule as a tuple `(L, K, R)` of `networkx.MultiDiGraph` objects.
+   - Use node/edge attributes for labels and properties (e.g., `label`, `props`).
+   - For the prototype, constrain rules to "create-only" changes (no deletions).
+
+2. Build a small local host graph in NetworkX for testing.
+   - Seed a handful of nodes/edges with labels and properties.
+   - Keep fixtures tiny to validate that matching and serialization behave as expected.
+
+3. Implement a basic matcher for simple rules.
+   - Match LHS patterns by label and a small set of properties.
+   - Return a `Match` structure that maps LHS node IDs to host graph node IDs.
+   - Keep matching deterministic and minimal; no need for full subgraph isomorphism yet.
+
+4. Implement DPO-style application for "create-only" rules.
+   - Compute `Delta(create_nodes, create_edges, set_props)` from the match and RHS.
+   - Skip delete operations and dangling conditions for now.
+   - Ensure new nodes/edges get stable identifiers for serialization.
+
+5. Serialize the delta into Cypher.
+   - Emit `MERGE`/`CREATE` for nodes and relationships.
+   - Emit `SET` for properties; parameterize values to avoid injection.
+   - Use labels and relationship types derived from node/edge attributes.
+
+6. Validate the generated Cypher against Neo4j.
+   - Load a tiny seed graph in Neo4j.
+   - Run the generated Cypher and confirm the expected changes appear.
+
+7. Add smoke tests with pytest.
+   - One test for matcher correctness.
+   - One test for delta calculation.
+   - One test for Cypher output given a fixed delta.
+
+## Quick Start (Rule Representation)
+
+```python
+import networkx as nx
+
+from reqre.rules import DpoRule, add_edge, add_node
+
+left = nx.MultiDiGraph()
+interface = nx.MultiDiGraph()
+right = nx.MultiDiGraph()
+
+add_node(left, "l1", label="Requirement", props={"id": "REQ-1"})
+add_node(interface, "k1", label="Requirement", props={"id": "REQ-1"})
+add_node(right, "r1", label="Requirement", props={"id": "REQ-1"})
+add_node(right, "r2", label="Component", props={"name": "Beam"})
+
+add_edge(right, "r1", "r2", rel_type="SATISFIES")
+
+rule = DpoRule(left=left, interface=interface, right=right)
+print(rule.summary())
+```
