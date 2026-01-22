@@ -2,6 +2,7 @@ README.md
 pyproject.toml
 src/reqre/__init__.py
 src/reqre/cypher.py
+src/reqre/neo4j.py
 src/reqre/rules.py
 src/reqre.egg-info/PKG-INFO
 src/reqre.egg-info/SOURCES.txt
