@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d9" for="edge" attr.name="reqre_roles" attr.type="string"/>
+<key id="d8" for="edge" attr.name="reqre_edge_key" attr.type="string"/>
+<key id="d7" for="edge" attr.name="reqre_props" attr.type="string"/>
+<key id="d6" for="edge" attr.name="type" attr.type="string"/>
+<key id="d5" for="node" attr.name="reqre_roles" attr.type="string"/>
+<key id="d4" for="node" attr.name="reqre_props" attr.type="string"/>
+<key id="d3" for="node" attr.name="label" attr.type="string"/>
+<key id="d2" for="graph" attr.name="reqre_roles" attr.type="string"/>
+<key id="d1" for="graph" attr.name="reqre_version" attr.type="string"/>
+<key id="d0" for="graph" attr.name="reqre_format" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">reqre_dpo_rule</data>
+<data key="d1">1</data>
+<data key="d2">left,interface,right</data>
+<node id="req1">
+  <data key="d3">Requirement</data>
+  <data key="d4">{"id": "REQ-1"}</data>
+  <data key="d5">interface,left,right</data>
+</node>
+<node id="comp1">
+  <data key="d3">Component</data>
+  <data key="d4">{"name": "Beam"}</data>
+  <data key="d5">right</data>
+</node>
+<edge source="req1" target="comp1" id="satisfies">
+  <data key="d6">SATISFIES</data>
+  <data key="d7">{"strength": 10}</data>
+  <data key="d8">"satisfies"</data>
+  <data key="d9">right</data>
+</edge>
+</graph></graphml>

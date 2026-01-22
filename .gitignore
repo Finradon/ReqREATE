@@ -2,3 +2,9 @@
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# Ignore all GraphML files
+*.graphml
+
+# …except those in graphml_rules/
+!graphml_rules/**/*.graphml

@@ -118,6 +118,20 @@ print(cypher.query)
 print(cypher.params)
 ```
 
+## GraphML Import/Export
+
+You can serialize rules to a single GraphML file and load them back:
+
+```python
+from reqre.graphml import export_rule_graphml, import_rule_graphml
+
+export_rule_graphml(rule, "rule.graphml")
+loaded_rule = import_rule_graphml("rule.graphml")
+```
+
+GraphML stores rule membership per node/edge using metadata, and `props` are
+encoded as JSON strings for portability.
+
 ## Cypher Serialization Notes
 
 - Create-only rules: left and interface graphs must match; deletions are rejected.
