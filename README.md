@@ -30,6 +30,32 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+## Neo4j Connection
+
+Set credentials in your environment before running code:
+
+```bash
+export NEO4J_URI=bolt://localhost:7687
+export NEO4J_USER=neo4j
+export NEO4J_PASSWORD=neo4jneo4j
+```
+
+Example usage:
+
+```python
+from reqre.neo4j import Neo4jClient
+
+with Neo4jClient() as client:
+    rows = client.execute("MATCH (n) RETURN count(n) AS total")
+    print(rows)
+```
+
+CLI demo:
+
+```bash
+python scripts/demo_neo4j.py --query "RETURN 1 AS ok"
+```
+
 ## Prototype Steps (Basic)
 
 1. Define a minimal data model for rules and matches.
