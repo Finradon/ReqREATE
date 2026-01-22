@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/reqre/__init__.py
+src/reqre/rules.py
+src/reqre.egg-info/PKG-INFO
+src/reqre.egg-info/SOURCES.txt
+src/reqre.egg-info/dependency_links.txt
+src/reqre.egg-info/requires.txt
+src/reqre.egg-info/top_level.txt
+tests/test_rules.py
