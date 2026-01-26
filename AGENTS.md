@@ -28,6 +28,7 @@ This repository is currently minimal and focused on the core concept in `README.
 - PRs should describe the rule change or behavior added, mention any new dependencies, and include tests where applicable.
 
 ## Issue Guidelines
+- Use glab to update/create/close issues in the gitlab instance.
 - Title format: verb-first, concise, and scoped (for example, "Support in-place label updates").
 - Description format:
   - Brief problem statement and motivation.
