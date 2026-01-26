@@ -265,8 +265,7 @@ def _dangling_conditions(
     for node_id in deleted_nodes:
         node_var = node_vars[node_id]
         conditions.append(
-            "NOT EXISTS { MATCH "
-            f"({node_var})-[r]-() WHERE NOT r IN {rel_list} }}"
+            "NOT EXISTS { MATCH " f"({node_var})-[r]-() WHERE NOT r IN {rel_list} }}"
         )
     return conditions
 

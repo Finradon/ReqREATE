@@ -12,11 +12,13 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 - `pip install -r requirements.txt`: install runtime and test dependencies (`networkx`, `neo4j`, `pytest`, `gaphor`).
 - `gaphor install-schemas`: run once after installing `requirements.txt`.
 - `pytest`: run the test suite.
+- `pre-commit install`: enable local git hooks.
+- `pre-commit run --all-files`: run the full pre-commit suite.
 
 ## Coding Style & Naming Conventions
 - Use Python 3 style with 4-space indentation and PEP 8 naming (`snake_case` for functions/variables, `PascalCase` for classes).
 - Keep graph rewriting logic isolated in the `src/reqre/` package; avoid spreading rule logic into scripts or notebooks.
-- No formatter or linter is configured yet; if you add one, document it here and pin it in `requirements.txt`.
+- Format and lint with `ruff` and `ruff-format` via pre-commit.
 
 ## Testing Guidelines
 - Use `pytest` for unit tests and name files `test_*.py`.

@@ -4,3 +4,5 @@ gaphor==3.2.0
 pytz==2025.2
 pytest==8.3.5
 ipykernel
+pre-commit==3.8.0
+ruff==0.6.9
