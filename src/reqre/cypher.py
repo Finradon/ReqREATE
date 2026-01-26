@@ -1,4 +1,4 @@
-"""Cypher serialization for DPO rules (create-only prototype)."""
+"""Cypher serialization for DPO rules."""
 
 from __future__ import annotations
 
@@ -32,8 +32,11 @@ class _EdgeRecord:
 
 @dataclass(frozen=True)
 class _RulePlan:
+    left_edges: list[_EdgeRecord]
     created_nodes: list[Any]
     created_edges: list[_EdgeRecord]
+    deleted_nodes: list[Any]
+    deleted_edge_indices: list[int]
 
 
 class _ParamBuilder:
@@ -57,27 +60,37 @@ class _ParamBuilder:
 
 
 def rule_to_cypher(rule: DpoRule) -> CypherQuery:
-    """Serialize a create-only DPO rule into Cypher."""
+    """Serialize a DPO rule into Cypher."""
     plan = _build_plan(rule)
+    left_nodes = _sorted_nodes(rule.left)
+    left_edges = plan.left_edges
 
     # Node variables must be consistent across MATCH and CREATE clauses.
     used_vars: set[str] = set()
     node_vars: dict[Any, str] = {}
-    for node_id in _sorted_nodes(rule.left):
+    for node_id in left_nodes:
         node_vars[node_id] = _make_node_var(node_id, used_vars)
     for node_id in plan.created_nodes:
         node_vars[node_id] = _make_node_var(node_id, used_vars)
 
     params = _ParamBuilder()
-    match_patterns = _build_match_patterns(rule.left, node_vars, params)
+    match_patterns = _build_match_patterns(rule.left, node_vars, params, left_edges)
     create_node_patterns = _build_create_nodes(
         rule.right, plan.created_nodes, node_vars, params
     )
     create_edge_patterns = _build_create_edges(plan.created_edges, node_vars, params)
+    where_clauses = _build_where_clauses(
+        left_nodes, len(left_edges), plan.deleted_nodes, node_vars
+    )
+    delete_targets = _build_delete_targets(plan, node_vars)
 
     clauses: list[str] = []
     if match_patterns:
         clauses.append("MATCH " + ", ".join(match_patterns))
+    if match_patterns and where_clauses:
+        clauses.append("WHERE " + " AND ".join(where_clauses))
+    if delete_targets:
+        clauses.append("DELETE " + ", ".join(delete_targets))
     if create_node_patterns:
         clauses.append("CREATE " + ", ".join(create_node_patterns))
     if create_edge_patterns:
@@ -93,45 +106,59 @@ def _build_plan(rule: DpoRule) -> _RulePlan:
     interface_nodes = set(rule.interface.nodes)
     right_nodes = set(rule.right.nodes)
 
-    # Create-only: left and interface must match (no deletions).
-    if interface_nodes != left_nodes:
-        missing = left_nodes - interface_nodes
-        if missing:
-            raise RuleSerializationError(
-                "Create-only rules do not support node deletion. "
-                f"Nodes missing from interface: {sorted(missing, key=str)}"
-            )
-        extra = interface_nodes - left_nodes
+    if not interface_nodes.issubset(left_nodes):
+        missing = interface_nodes - left_nodes
         raise RuleSerializationError(
             "Interface must be a subgraph of left. "
-            f"Extra interface nodes: {sorted(extra, key=str)}"
+            f"Missing from left: {sorted(missing, key=str)}"
         )
 
     if not interface_nodes.issubset(right_nodes):
-        extra = interface_nodes - right_nodes
+        missing = interface_nodes - right_nodes
         raise RuleSerializationError(
-            "Interface nodes must exist in right graph. "
-            f"Missing from right: {sorted(extra, key=str)}"
+            "Interface must be a subgraph of right. "
+            f"Missing from right: {sorted(missing, key=str)}"
         )
 
-    # Enforce edge preservation with a multiset comparison (MultiDiGraph support).
+    common_nodes = left_nodes & right_nodes
+    if interface_nodes != common_nodes:
+        missing = common_nodes - interface_nodes
+        raise RuleSerializationError(
+            "Nodes present in both left and right must be in interface. "
+            f"Missing from interface: {sorted(missing, key=str)}"
+        )
+
+    _validate_preserved_nodes(rule, interface_nodes)
+
+    left_edges_list = _sorted_edges(rule.left)
     left_edges = _edge_multiset(rule.left, context="left")
     interface_edges = _edge_multiset(rule.interface, context="interface")
-    if left_edges != interface_edges:
-        raise RuleSerializationError(
-            "Create-only rules require left and interface edges to match."
-        )
-
     right_edges = _edge_multiset(rule.right, context="right")
+
+    if not _multiset_is_subset(interface_edges, left_edges):
+        raise RuleSerializationError("Interface edges must be a subset of left edges.")
+
     if not _multiset_is_subset(interface_edges, right_edges):
+        raise RuleSerializationError("Interface edges must be a subset of right edges.")
+
+    shared_edges = _multiset_intersection(left_edges, right_edges)
+    if interface_edges != shared_edges:
         raise RuleSerializationError(
-            "Interface edges must be preserved in right graph."
+            "Edges present in both left and right must be in interface."
         )
 
     created_nodes = sorted(right_nodes - interface_nodes, key=str)
+    deleted_nodes = sorted(left_nodes - interface_nodes, key=str)
     created_edges = _edge_difference(rule.right, interface_edges)
+    deleted_edge_indices = _edge_deletion_indices(left_edges_list, interface_edges)
 
-    return _RulePlan(created_nodes=created_nodes, created_edges=created_edges)
+    return _RulePlan(
+        left_edges=left_edges_list,
+        created_nodes=created_nodes,
+        created_edges=created_edges,
+        deleted_nodes=deleted_nodes,
+        deleted_edge_indices=deleted_edge_indices,
+    )
 
 
 def _validate_graphs(rule: DpoRule) -> None:
@@ -145,7 +172,10 @@ def _validate_graphs(rule: DpoRule) -> None:
 
 
 def _build_match_patterns(
-    graph: RuleGraph, node_vars: Mapping[Any, str], params: _ParamBuilder
+    graph: RuleGraph,
+    node_vars: Mapping[Any, str],
+    params: _ParamBuilder,
+    edges: Optional[Sequence[_EdgeRecord]] = None,
 ) -> list[str]:
     patterns: list[str] = []
 
@@ -154,7 +184,8 @@ def _build_match_patterns(
         data = graph.nodes[node_id]
         patterns.append(_node_pattern(node_id, data, node_vars, params, "left"))
 
-    edges = _sorted_edges(graph)
+    if edges is None:
+        edges = _sorted_edges(graph)
     for index, edge in enumerate(edges):
         patterns.append(
             _match_edge_pattern(edge, node_vars, params, index, context="left")
@@ -189,6 +220,105 @@ def _build_create_edges(
     return patterns
 
 
+def _build_where_clauses(
+    left_node_ids: Sequence[Any],
+    left_edge_count: int,
+    deleted_nodes: Sequence[Any],
+    node_vars: Mapping[Any, str],
+) -> list[str]:
+    clauses: list[str] = []
+    clauses.extend(_distinct_node_conditions(left_node_ids, node_vars))
+    clauses.extend(_distinct_edge_conditions(left_edge_count))
+    clauses.extend(_dangling_conditions(deleted_nodes, left_edge_count, node_vars))
+    return clauses
+
+
+def _distinct_node_conditions(
+    left_node_ids: Sequence[Any], node_vars: Mapping[Any, str]
+) -> list[str]:
+    conditions: list[str] = []
+    for index, node_id in enumerate(left_node_ids):
+        node_var = node_vars[node_id]
+        for other_id in left_node_ids[index + 1 :]:
+            conditions.append(f"id({node_var}) <> id({node_vars[other_id]})")
+    return conditions
+
+
+def _distinct_edge_conditions(left_edge_count: int) -> list[str]:
+    conditions: list[str] = []
+    for index in range(left_edge_count):
+        for other in range(index + 1, left_edge_count):
+            conditions.append(f"id(r{index}) <> id(r{other})")
+    return conditions
+
+
+def _dangling_conditions(
+    deleted_nodes: Sequence[Any],
+    left_edge_count: int,
+    node_vars: Mapping[Any, str],
+) -> list[str]:
+    if not deleted_nodes:
+        return []
+    rel_vars = ", ".join(f"r{index}" for index in range(left_edge_count))
+    rel_list = f"[{rel_vars}]"
+    conditions: list[str] = []
+    for node_id in deleted_nodes:
+        node_var = node_vars[node_id]
+        conditions.append(
+            "NOT EXISTS { MATCH "
+            f"({node_var})-[r]-() WHERE NOT r IN {rel_list} }}"
+        )
+    return conditions
+
+
+def _build_delete_targets(plan: _RulePlan, node_vars: Mapping[Any, str]) -> list[str]:
+    targets = [f"r{index}" for index in plan.deleted_edge_indices]
+    targets.extend(node_vars[node_id] for node_id in plan.deleted_nodes)
+    return targets
+
+
+def _edge_deletion_indices(
+    edges: Sequence[_EdgeRecord], preserved_edges: Counter
+) -> list[int]:
+    remaining = Counter(preserved_edges)
+    deleted_indices: list[int] = []
+    for index, edge in enumerate(edges):
+        descriptor = _edge_descriptor(edge, context="left")
+        if remaining[descriptor] > 0:
+            remaining[descriptor] -= 1
+        else:
+            deleted_indices.append(index)
+    return deleted_indices
+
+
+def _multiset_intersection(left: Counter, right: Counter) -> Counter:
+    result: Counter = Counter()
+    for key in left.keys() & right.keys():
+        result[key] = min(left[key], right[key])
+    return result
+
+
+def _validate_preserved_nodes(rule: DpoRule, preserved_nodes: set[Any]) -> None:
+    for node_id in preserved_nodes:
+        left_attrs = _normalized_node_attrs(rule.left, node_id, "left")
+        interface_attrs = _normalized_node_attrs(rule.interface, node_id, "interface")
+        right_attrs = _normalized_node_attrs(rule.right, node_id, "right")
+        if left_attrs != interface_attrs or left_attrs != right_attrs:
+            raise RuleSerializationError(
+                "Preserved nodes must keep identical labels/props across left, "
+                f"interface, and right. Mismatch on node '{node_id}'."
+            )
+
+
+def _normalized_node_attrs(
+    graph: RuleGraph, node_id: Any, context: str
+) -> tuple[tuple[str, ...], dict[str, Any]]:
+    data = graph.nodes[node_id]
+    labels = _normalize_labels(data.get("label"), context=f"{context} node {node_id}")
+    props = _normalize_props(data.get("props"), context=f"{context} node {node_id}")
+    return (tuple(sorted(labels)), props)
+
+
 def _node_pattern(
     node_id: Any,
     data: Mapping[str, Any],
@@ -218,6 +348,7 @@ def _match_edge_pattern(
         context=context,
         require_type=False,
         allow_anonymous=True,
+        force_var=True,
     )
 
 
@@ -236,6 +367,7 @@ def _create_edge_pattern(
         context=context,
         require_type=True,
         allow_anonymous=False,
+        force_var=False,
     )
 
 
@@ -248,6 +380,7 @@ def _edge_pattern(
     context: str,
     require_type: bool,
     allow_anonymous: bool,
+    force_var: bool,
 ) -> str:
     source_var = node_vars[edge.source]
     target_var = node_vars[edge.target]
@@ -263,7 +396,9 @@ def _edge_pattern(
     )
 
     rel_var = ""
-    if not rel_type and rel_props and allow_anonymous:
+    if force_var:
+        rel_var = rel_scope
+    elif not rel_type and rel_props and allow_anonymous:
         rel_var = rel_scope
 
     rel_type_fragment = f":{rel_type}" if rel_type else ""

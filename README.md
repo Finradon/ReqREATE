@@ -152,10 +152,11 @@ encoded as JSON strings for portability.
 
 ## Cypher Serialization Notes
 
-- Create-only rules: left and interface graphs must match; deletions are rejected.
-- Interface nodes must exist in the right graph; right may add nodes/edges.
-- Use consistent node IDs for preserved elements across L, K, and R.
-- Node `label` and edge `type` must be valid Cypher identifiers.
+- Interface nodes must be present in both left and right; nodes shared by left/right must appear in the interface.
+- Interface edges must be present in both left and right; shared edges must appear in the interface.
+- Deletions are supported; deleted nodes must have no extra relationships outside the matched LHS.
+- Preserved nodes must keep identical labels/props across L/K/R (attribute updates are not serialized yet).
+- Node `label` (string or sequence) and edge `type` must be valid Cypher identifiers.
 - `props` must be a mapping with string keys; values are parameterized.
 - Relationship types are required for created edges; missing types on the LHS mean "match any type."
 
@@ -164,7 +165,7 @@ encoded as JSON strings for portability.
 1. Define a minimal data model for rules and matches.
    - Represent each rule as a tuple `(L, K, R)` of `networkx.MultiDiGraph` objects.
    - Use node/edge attributes for labels and properties (e.g., `label`, `props`).
-   - For the prototype, constrain rules to "create-only" changes (no deletions).
+   - For the prototype, support create/delete changes and enforce dangling checks.
 
 2. Build a small local host graph in NetworkX for testing.
    - Seed a handful of nodes/edges with labels and properties.
@@ -175,9 +176,9 @@ encoded as JSON strings for portability.
    - Return a `Match` structure that maps LHS node IDs to host graph node IDs.
    - Keep matching deterministic and minimal; no need for full subgraph isomorphism yet.
 
-4. Implement DPO-style application for "create-only" rules.
-   - Compute `Delta(create_nodes, create_edges, set_props)` from the match and RHS.
-   - Skip delete operations and dangling conditions for now.
+4. Implement DPO-style application for create/delete rules.
+   - Compute `Delta(delete, create, set_props)` from the match and RHS.
+   - Enforce dangling conditions for deletions.
    - Ensure new nodes/edges get stable identifiers for serialization.
 
 5. Serialize the delta into Cypher.

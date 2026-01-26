@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping, Optional, Sequence
 
 import networkx as nx
 
@@ -15,7 +15,7 @@ def add_node(
     graph: RuleGraph,
     node_id: str,
     *,
-    label: Optional[str] = None,
+    label: Optional[str | Sequence[str]] = None,
     props: Optional[Mapping[str, Any]] = None,
 ) -> None:
     """Add a node with standard label/props attributes."""

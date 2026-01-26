@@ -12,6 +12,7 @@ from reqre.rules import DpoRule, RuleGraph
 
 _ROLE_ATTR = "reqre_roles"
 _PROPS_ATTR = "reqre_props"
+_LABELS_ATTR = "reqre_labels"
 _EDGE_KEY_ATTR = "reqre_edge_key"
 _FORMAT_ATTR = "reqre_format"
 _VERSION_ATTR = "reqre_version"
@@ -96,7 +97,7 @@ def _merge_graph(role: str, graph: RuleGraph, combined: RuleGraph) -> None:
 def _merge_node(
     role: str, node_id: Any, data: Mapping[str, Any], combined: RuleGraph
 ) -> None:
-    if _ROLE_ATTR in data or _PROPS_ATTR in data:
+    if _ROLE_ATTR in data or _PROPS_ATTR in data or _LABELS_ATTR in data:
         raise RuleGraphMLFormatError(
             f"Node {node_id} uses reserved GraphML metadata keys."
         )
@@ -163,7 +164,14 @@ def _merge_roles_value(value: Any, role: str) -> str:
 
 def _serialize_attrs(data: Mapping[str, Any], context: str) -> dict[str, Any]:
     result = dict(data)
+    labels = result.pop("label", None)
     props = result.pop("props", None)
+    if labels is not None:
+        if isinstance(labels, str):
+            result["label"] = labels
+        else:
+            label_list = _validate_labels(labels, context)
+            result[_LABELS_ATTR] = json.dumps(label_list)
     if props is None:
         return result
 
@@ -176,8 +184,16 @@ def _deserialize_attrs(data: Mapping[str, Any], context: str) -> dict[str, Any]:
     result = dict(data)
     result.pop(_ROLE_ATTR, None)
     result.pop(_EDGE_KEY_ATTR, None)
+    labels_value = result.pop(_LABELS_ATTR, None)
     if context.startswith("edge "):
         result.pop("id", None)
+
+    if labels_value is not None:
+        result["label"] = _parse_labels(labels_value, context)
+    elif "label" in result:
+        label_value = result["label"]
+        if not isinstance(label_value, str):
+            result["label"] = _parse_labels(label_value, context)
 
     if _PROPS_ATTR in result:
         props_value = result.pop(_PROPS_ATTR)
@@ -227,6 +243,31 @@ def _validate_props(props: Any, context: str) -> dict[str, Any]:
             f"{context} props must be JSON-serializable."
         ) from exc
     return dict(props)
+
+
+def _validate_labels(labels: Any, context: str) -> list[str]:
+    if isinstance(labels, str):
+        return [labels]
+    if not isinstance(labels, (list, tuple, set)):
+        raise RuleGraphMLFormatError(f"{context} labels must be strings or sequences.")
+    cleaned: list[str] = []
+    for label in labels:
+        if not isinstance(label, str):
+            raise RuleGraphMLFormatError(f"{context} labels must be strings.")
+        cleaned.append(label)
+    return cleaned
+
+
+def _parse_labels(value: Any, context: str) -> list[str]:
+    if isinstance(value, (list, tuple, set)):
+        return _validate_labels(value, context)
+    if not isinstance(value, str):
+        raise RuleGraphMLFormatError(f"{context} labels must be a JSON string.")
+    try:
+        decoded = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise RuleGraphMLFormatError(f"{context} labels must be valid JSON.") from exc
+    return _validate_labels(decoded, context)
 
 
 def _parse_props(value: Any, context: str) -> dict[str, Any]:

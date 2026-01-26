@@ -31,7 +31,79 @@ def test_rule_to_cypher_create_only() -> None:
     }
 
 
-def test_rule_to_cypher_rejects_deletions() -> None:
+def test_rule_to_cypher_multilabel_create() -> None:
+    left = nx.MultiDiGraph()
+    interface = nx.MultiDiGraph()
+    right = nx.MultiDiGraph()
+
+    add_node(left, "req1", label=["Requirement", "Spec"], props={"id": "REQ-1"})
+    add_node(interface, "req1", label=["Requirement", "Spec"], props={"id": "REQ-1"})
+    add_node(right, "req1", label=["Requirement", "Spec"], props={"id": "REQ-1"})
+    add_node(right, "comp1", label=["Component", "Steel"], props={"name": "Beam"})
+
+    rule = DpoRule(left=left, interface=interface, right=right)
+    cypher = rule_to_cypher(rule)
+
+    assert cypher.query == (
+        "MATCH (n_req1:Requirement:Spec {id: $n_req1_id})\n"
+        "CREATE (n_comp1:Component:Steel {name: $n_comp1_name})"
+    )
+    assert cypher.params == {
+        "n_req1_id": "REQ-1",
+        "n_comp1_name": "Beam",
+    }
+
+
+def test_rule_to_cypher_deletes_edge() -> None:
+    left = nx.MultiDiGraph()
+    interface = nx.MultiDiGraph()
+    right = nx.MultiDiGraph()
+
+    add_node(left, "a", label="Thing", props={"id": "A"})
+    add_node(interface, "a", label="Thing", props={"id": "A"})
+    add_node(right, "a", label="Thing", props={"id": "A"})
+    add_node(left, "b", label="Thing", props={"id": "B"})
+    add_node(interface, "b", label="Thing", props={"id": "B"})
+    add_node(right, "b", label="Thing", props={"id": "B"})
+
+    add_edge(left, "a", "b", rel_type="LINKS")
+
+    rule = DpoRule(left=left, interface=interface, right=right)
+    cypher = rule_to_cypher(rule)
+
+    assert cypher.query == (
+        "MATCH (n_a:Thing {id: $n_a_id}), (n_b:Thing {id: $n_b_id}), "
+        "(n_a)-[r0:LINKS]->(n_b)\n"
+        "WHERE id(n_a) <> id(n_b)\n"
+        "DELETE r0"
+    )
+    assert cypher.params == {
+        "n_a_id": "A",
+        "n_b_id": "B",
+    }
+
+
+def test_rule_to_cypher_deletes_node() -> None:
+    left = nx.MultiDiGraph()
+    interface = nx.MultiDiGraph()
+    right = nx.MultiDiGraph()
+
+    add_node(left, "a", label="Thing", props={"id": "A"})
+
+    rule = DpoRule(left=left, interface=interface, right=right)
+    cypher = rule_to_cypher(rule)
+
+    assert cypher.query == (
+        "MATCH (n_a:Thing {id: $n_a_id})\n"
+        "WHERE NOT EXISTS { MATCH (n_a)-[r]-() WHERE NOT r IN [] }\n"
+        "DELETE n_a"
+    )
+    assert cypher.params == {
+        "n_a_id": "A",
+    }
+
+
+def test_rule_to_cypher_rejects_missing_interface_nodes() -> None:
     left = nx.MultiDiGraph()
     interface = nx.MultiDiGraph()
     right = nx.MultiDiGraph()
@@ -41,5 +113,8 @@ def test_rule_to_cypher_rejects_deletions() -> None:
 
     rule = DpoRule(left=left, interface=interface, right=right)
 
-    with pytest.raises(RuleSerializationError, match="do not support node deletion"):
+    with pytest.raises(
+        RuleSerializationError,
+        match="Nodes present in both left and right must be in interface",
+    ):
         rule_to_cypher(rule)
