@@ -27,6 +27,15 @@ This repository is currently minimal and focused on the core concept in `README.
 - There is no commit history yet, so no established commit message convention. If you introduce one, keep it consistent and document it here (for example, `feat:`, `fix:`, `docs:` prefixes).
 - PRs should describe the rule change or behavior added, mention any new dependencies, and include tests where applicable.
 
+## Issue Guidelines
+- Title format: verb-first, concise, and scoped (for example, "Support in-place label updates").
+- Description format:
+  - Brief problem statement and motivation.
+  - "Acceptance" section with checklist/ticklist.
+  - Testing notes if applicable.
+- Labels: include at least one area label (for example, `Serialization`, `Feature`, `SysML`).
+- Newline safety: some CLI tools treat literal `\n` as text and render it verbatim; prefer heredocs or multiline strings to preserve line breaks in issue descriptions.
+
 ## Notes for Contributors
 - This project targets rule-based graph rewriting for SysML requirements; keep the LHS/RHS mental model visible in naming and module boundaries.
 - If you add configuration or credentials for Neo4j, use environment variables and avoid committing secrets.
