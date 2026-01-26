@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is currently minimal and focused on the core concept in `README.md` plus Python dependencies in `requirements.txt`. As code is added, place Python modules in a top-level package directory (for example, `reqre/`) and keep scripts in `scripts/`. If tests are introduced, use a `tests/` directory alongside the package.
+Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `tests/`. Keep new graph-rewriting logic in well-named modules (for example, `rules.py`, `matching.py`, `cypher.py`) to preserve the LHS/RHS workflow described in `README.md`.
 
 ## Build, Test, and Development Commands
 - `python -m venv .venv` then `source .venv/bin/activate`: create and activate a local virtual environment.
@@ -11,11 +11,11 @@ This repository is currently minimal and focused on the core concept in `README.
   - Arch: `sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gtksourceview5 libadwaita`
 - `pip install -r requirements.txt`: install runtime and test dependencies (`networkx`, `neo4j`, `pytest`, `gaphor`).
 - `gaphor install-schemas`: run once after installing `requirements.txt`.
-- `pytest`: run the test suite once tests exist.
+- `pytest`: run the test suite.
 
 ## Coding Style & Naming Conventions
 - Use Python 3 style with 4-space indentation and PEP 8 naming (`snake_case` for functions/variables, `PascalCase` for classes).
-- Keep graph rewriting logic isolated in well-named modules (for example, `rules.py`, `matching.py`, `cypher.py`) to mirror the LHS/RHS workflow described in `README.md`.
+- Keep graph rewriting logic isolated in the `src/reqre/` package; avoid spreading rule logic into scripts or notebooks.
 - No formatter or linter is configured yet; if you add one, document it here and pin it in `requirements.txt`.
 
 ## Testing Guidelines
@@ -24,7 +24,7 @@ This repository is currently minimal and focused on the core concept in `README.
 - If coverage goals are introduced, document the threshold and how it is enforced.
 
 ## Commit & Pull Request Guidelines
-- There is no commit history yet, so no established commit message convention. If you introduce one, keep it consistent and document it here (for example, `feat:`, `fix:`, `docs:` prefixes).
+- Follow the established commit message style in the repository history. If unsure, use conventional prefixes like `feat:`, `fix:`, `docs:`, `test:`, `chore:`.
 - PRs should describe the rule change or behavior added, mention any new dependencies, and include tests where applicable.
 
 ## Issue Guidelines
