@@ -1,6 +1,7 @@
 neo4j==6.1.0
 networkx==3.6.1
 gaphor==3.2.0
+jsonschema==4.23.0
 pytz==2025.2
 pytest==8.3.5
 ipykernel

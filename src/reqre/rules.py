@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional, Sequence
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Sequence
 
 import networkx as nx
 
@@ -74,6 +74,28 @@ class DpoRule:
     ) -> "DpoRule":
         return cls(left=left, interface=interface, right=right)
 
+    @classmethod
+    def from_json(
+        cls, payload: Mapping[str, Any], *, validate: bool = False
+    ) -> "DpoRule":
+        """Load a DPO rule from a JSON-compatible mapping.
+
+        Expected shape:
+            {
+              "left": {"nodes": [...], "edges": [...]},
+              "interface": {"nodes": [...], "edges": [...]},
+              "right": {"nodes": [...], "edges": [...]}
+            }
+        """
+        if validate:
+            from reqre.schema import validate_dpo_rule_payload
+
+            validate_dpo_rule_payload(payload)
+        left = cls._graph_from_payload("left", payload.get("left"))
+        interface = cls._graph_from_payload("interface", payload.get("interface"))
+        right = cls._graph_from_payload("right", payload.get("right"))
+        return cls(left=left, interface=interface, right=right)
+
     def summary(self) -> dict[str, int]:
         """Return basic counts for inspection/logging."""
         return {
@@ -84,3 +106,45 @@ class DpoRule:
             "right_nodes": self.right.number_of_nodes(),
             "right_edges": self.right.number_of_edges(),
         }
+
+    @staticmethod
+    def _graph_from_payload(name: str, payload: Any) -> RuleGraph:
+        if not isinstance(payload, Mapping):
+            raise TypeError(f"{name} must be a mapping with 'nodes' and 'edges'")
+        nodes = payload.get("nodes", [])
+        edges = payload.get("edges", [])
+        if not isinstance(nodes, Iterable):
+            raise TypeError(f"{name}.nodes must be a list of node mappings")
+        if not isinstance(edges, Iterable):
+            raise TypeError(f"{name}.edges must be a list of edge mappings")
+        graph = nx.MultiDiGraph()
+        for node in nodes:
+            if not isinstance(node, Mapping):
+                raise TypeError(f"{name}.nodes entries must be mappings")
+            node_id = node.get("id")
+            if not isinstance(node_id, str) or not node_id:
+                raise ValueError(f"{name}.nodes entries must include non-empty 'id'")
+            add_node(
+                graph,
+                node_id,
+                label=node.get("label"),
+                props=node.get("props"),
+            )
+        for edge in edges:
+            if not isinstance(edge, Mapping):
+                raise TypeError(f"{name}.edges entries must be mappings")
+            source = edge.get("source")
+            target = edge.get("target")
+            if not isinstance(source, str) or not isinstance(target, str):
+                raise ValueError(
+                    f"{name}.edges entries must include string 'source'/'target'"
+                )
+            add_edge(
+                graph,
+                source,
+                target,
+                key=edge.get("key"),
+                rel_type=edge.get("type"),
+                props=edge.get("props"),
+            )
+        return graph
