@@ -1,0 +1,55 @@
+{
+  "left": {
+    "nodes": [
+      {
+        "id": "req1",
+        "label": "Requirement",
+        "props": {
+          "id": "REQ-1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req1",
+        "label": "Requirement",
+        "props": {
+          "id": "REQ-1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req1",
+        "label": "Requirement",
+        "props": {
+          "id": "REQ-1"
+        }
+      },
+      {
+        "id": "comp1",
+        "label": "Component",
+        "props": {
+          "name": "Beam"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "req1",
+        "target": "comp1",
+        "key": "satisfies",
+        "type": "SATISFIES",
+        "props": {
+          "strength": 10
+        }
+      }
+    ]
+  }
+}
