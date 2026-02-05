@@ -42,3 +42,11 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 ## Notes for Contributors
 - This project targets rule-based graph rewriting for SysML requirements; keep the LHS/RHS mental model visible in naming and module boundaries.
 - If you add configuration or credentials for Neo4j, use environment variables and avoid committing secrets.
+
+## DPO Rule JSON Import Hints
+- The JSON rule format is validated against `src/reqre/schemas/dpo_rule.schema.json`.
+- A rule object must include `left`, `interface`, and `right`. Optional top-level fields are `schema_version`, `rule_id`, `name`, `description`, and `metadata`.
+- Each graph (`left`, `interface`, `right`) contains `nodes` and `edges` arrays; both default to empty arrays when omitted.
+- Nodes require a non-empty string `id`. `label` may be a string or array of strings. `props` may contain any JSON-compatible values.
+- Edges require `source` and `target` (non-empty strings). Optional fields: `key` (string or number), `type` (string), `props` (any JSON values).
+- `additionalProperties` is `false` for rule objects, graphs, nodes, and edges, so unknown fields will fail validation. Keep custom data inside `metadata` or `props`.
