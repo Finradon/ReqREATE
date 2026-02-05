@@ -1,0 +1,3 @@
+[submodule "gh_samples"]
+	path = gh_samples
+	url = git@gitlab.lrz.de:benedict.harder/gh.git
