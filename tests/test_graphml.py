@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import networkx as nx
@@ -67,3 +68,19 @@ def test_graphml_import_requires_roles(tmp_path: Path) -> None:
 
     with pytest.raises(RuleGraphMLFormatError):
         import_rule_graphml(path)
+
+
+def test_graphml_rule_matches_json_fixture() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    graphml_path = repo_root / "graphml_rules" / "rule.graphml"
+    json_path = repo_root / "graphml_rules" / "rule.json"
+
+    with json_path.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+
+    expected = DpoRule.from_json(payload, validate=True)
+    loaded = import_rule_graphml(graphml_path)
+
+    _assert_graph_equal(expected.left, loaded.left)
+    _assert_graph_equal(expected.interface, loaded.interface)
+    _assert_graph_equal(expected.right, loaded.right)
