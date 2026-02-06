@@ -73,7 +73,8 @@
         "label": "BuildingElement",
         "props": {
           "gh_file": "gh_samples/abutment_d1.gh",
-          "name": "AbutmentElement1"
+          "name": "AbutmentElement1",
+          "detail_level": "D1"
         }
       },
       {
@@ -81,7 +82,8 @@
         "label": "BuildingElement",
         "props": {
           "gh_file": "gh_samples/abutment_d1.gh",
-          "name": "AbutmentElement2"
+          "name": "AbutmentElement2",
+          "detail_level": "D1"
         }
       }
     ],

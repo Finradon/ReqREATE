@@ -80,10 +80,18 @@
       },
       {
         "id": "fe_girder",
-        "label": ["FunctionalElement", "BuildingElement"],
+        "label": "FunctionalElement",
         "props": {
-          "name": "Girder",
-          "gh_file": "gh_samples/girder_D1.gh"
+          "name": "Girder"
+        }
+      },
+      {
+        "id": "be_girder_element",
+        "label": "BuildingElement",
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/girder_D1.gh",
+          "detail_level": "D1"
         }
       }
     ],
@@ -96,6 +104,11 @@
       {
         "source": "fe_girder",
         "target": "fe_superstructure",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "be_girder_element",
+        "target": "fe_girder",
         "type": "DECOMPOSES"
       }
     ]

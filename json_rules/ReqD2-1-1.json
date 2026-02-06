@@ -83,7 +83,8 @@
         "label": "BuildingElement",
         "props": {
           "name": "GirderElement",
-          "gh_file": "gh_samples/t_girder_d2.gh"
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
         }
       }
     ],
