@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Sequence
 
 import networkx as nx
@@ -57,11 +57,15 @@ class DpoRule:
     left: RuleGraph
     interface: RuleGraph
     right: RuleGraph
+    nacs: tuple[RuleGraph, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "nacs", tuple(self.nacs))
         self._validate_graph("left", self.left)
         self._validate_graph("interface", self.interface)
         self._validate_graph("right", self.right)
+        for index, nac in enumerate(self.nacs):
+            self._validate_graph(f"nac[{index}]", nac)
 
     @staticmethod
     def _validate_graph(name: str, graph: RuleGraph) -> None:
@@ -94,7 +98,8 @@ class DpoRule:
         left = cls._graph_from_payload("left", payload.get("left"))
         interface = cls._graph_from_payload("interface", payload.get("interface"))
         right = cls._graph_from_payload("right", payload.get("right"))
-        return cls(left=left, interface=interface, right=right)
+        nacs = cls._graphs_from_payload("nac", payload.get("nac", []))
+        return cls(left=left, interface=interface, right=right, nacs=tuple(nacs))
 
     def summary(self) -> dict[str, int]:
         """Return basic counts for inspection/logging."""
@@ -106,6 +111,19 @@ class DpoRule:
             "right_nodes": self.right.number_of_nodes(),
             "right_edges": self.right.number_of_edges(),
         }
+
+    @staticmethod
+    def _graphs_from_payload(name: str, payload: Any) -> list[RuleGraph]:
+        if payload is None:
+            return []
+        if not isinstance(payload, Sequence) or isinstance(
+            payload, (str, bytes, bytearray, Mapping)
+        ):
+            raise TypeError(f"{name} must be a list of graphs")
+        graphs: list[RuleGraph] = []
+        for index, entry in enumerate(payload):
+            graphs.append(DpoRule._graph_from_payload(f"{name}[{index}]", entry))
+        return graphs
 
     @staticmethod
     def _graph_from_payload(name: str, payload: Any) -> RuleGraph:

@@ -45,8 +45,10 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 
 ## DPO Rule JSON Import Hints
 - The JSON rule format is validated against `src/reqre/schemas/dpo_rule.schema.json`.
-- A rule object must include `left`, `interface`, and `right`. Optional top-level fields are `schema_version`, `rule_id`, `name`, `description`, and `metadata`.
-- Each graph (`left`, `interface`, `right`) contains `nodes` and `edges` arrays; both default to empty arrays when omitted.
+- A rule object must include `left`, `interface`, and `right`. Optional top-level fields are `schema_version`, `rule_id`, `name`, `description`, `metadata`, and `nac`.
+- `nac` is a list of negative application condition graphs. Each NAC graph follows the same shape as `left`/`interface`/`right` and is used to block rule application when the NAC pattern already exists.
+- Each graph (`left`, `interface`, `right`, and each `nac` entry) contains `nodes` and `edges` arrays; both default to empty arrays when omitted.
 - Nodes require a non-empty string `id`. `label` may be a string or array of strings. `props` may contain any JSON-compatible values.
 - Edges require `source` and `target` (non-empty strings). Optional fields: `key` (string or number), `type` (string), `props` (any JSON values).
 - `additionalProperties` is `false` for rule objects, graphs, nodes, and edges, so unknown fields will fail validation. Keep custom data inside `metadata` or `props`.
+- When creating rules that should be idempotent, add a `nac` that blocks the rule if a target subgraph already exists (for example, a `SATISFIES` edge from the requirement).

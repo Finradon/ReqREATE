@@ -1,6 +1,29 @@
 {
   "rule_id": "ReqD1-1",
   "name": "Requirement D1.1 satisfied by bridge decomposition",
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "req_d1_1",
+          "label": "Requirement",
+          "props": {
+            "external_id": "D1.1"
+          }
+        },
+        {
+          "id": "existing_satisfier"
+        }
+      ],
+      "edges": [
+        {
+          "source": "req_d1_1",
+          "target": "existing_satisfier",
+          "type": "SATISFIES"
+        }
+      ]
+    }
+  ],
   "left": {
     "nodes": [
       {

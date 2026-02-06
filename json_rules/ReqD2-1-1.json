@@ -1,14 +1,14 @@
 {
-  "rule_id": "ReqD2-1",
-  "name": "Requirement satisfied by girder decomposition",
+  "rule_id": "ReqD2-1-1",
+  "name": "Requirement satisfied by girder element decomposition",
   "nac": [
     {
       "nodes": [
         {
-          "id": "req_d2_1",
+          "id": "req_d2_1_1",
           "label": "Requirement",
           "props": {
-            "external_id": "D2.1"
+            "external_id": "D2.1.1"
           }
         },
         {
@@ -17,7 +17,7 @@
       ],
       "edges": [
         {
-          "source": "req_d2_1",
+          "source": "req_d2_1_1",
           "target": "existing_satisfier",
           "type": "SATISFIES"
         }
@@ -27,55 +27,10 @@
   "left": {
     "nodes": [
       {
-        "id": "req_d2_1",
+        "id": "req_d2_1_1",
         "label": "Requirement",
         "props": {
-          "external_id": "D2.1"
-        }
-      },
-      {
-        "id": "fe_superstructure",
-        "label": "FunctionalElement",
-        "props": {
-          "name": "Superstructure"
-        }
-      }
-    ],
-    "edges": []
-  },
-  "interface": {
-    "nodes": [
-      {
-        "id": "req_d2_1",
-        "label": "Requirement",
-        "props": {
-          "external_id": "D2.1"
-        }
-      },
-      {
-        "id": "fe_superstructure",
-        "label": "FunctionalElement",
-        "props": {
-          "name": "Superstructure"
-        }
-      }
-    ],
-    "edges": []
-  },
-  "right": {
-    "nodes": [
-      {
-        "id": "req_d2_1",
-        "label": "Requirement",
-        "props": {
-          "external_id": "D2.1"
-        }
-      },
-      {
-        "id": "fe_superstructure",
-        "label": "FunctionalElement",
-        "props": {
-          "name": "Superstructure"
+          "external_id": "D2.1.1"
         }
       },
       {
@@ -86,15 +41,60 @@
         }
       }
     ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1.1"
+        }
+      },
+      {
+        "id": "fe_girder",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Girder"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1.1"
+        }
+      },
+      {
+        "id": "fe_girder",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Girder"
+        }
+      },
+      {
+        "id": "be_girder_element",
+        "label": "BuildingElement",
+        "props": {
+          "name": "GirderElement"
+        }
+      }
+    ],
     "edges": [
       {
-        "source": "req_d2_1",
-        "target": "fe_girder",
+        "source": "req_d2_1_1",
+        "target": "be_girder_element",
         "type": "SATISFIES"
       },
       {
-        "source": "fe_girder",
-        "target": "fe_superstructure",
+        "source": "be_girder_element",
+        "target": "fe_girder",
         "type": "DECOMPOSES"
       }
     ]

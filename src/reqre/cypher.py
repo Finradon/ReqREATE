@@ -82,6 +82,9 @@ def rule_to_cypher(rule: DpoRule) -> CypherQuery:
     where_clauses = _build_where_clauses(
         left_nodes, len(left_edges), plan.deleted_nodes, node_vars
     )
+    where_clauses.extend(
+        _build_nac_clauses(rule, node_vars, params, used_vars=used_vars)
+    )
     delete_targets = _build_delete_targets(plan, node_vars)
 
     clauses: list[str] = []
@@ -169,6 +172,30 @@ def _validate_graphs(rule: DpoRule) -> None:
     ):
         if not isinstance(graph, RuleGraph):
             raise RuleSerializationError(f"{name} must be a networkx.MultiDiGraph")
+    _validate_nacs(rule)
+
+
+def _validate_nacs(rule: DpoRule) -> None:
+    left_nodes = set(rule.left.nodes)
+    left_attrs: dict[Any, tuple[tuple[str, ...], dict[str, Any]]] = {}
+    for node_id in left_nodes:
+        left_attrs[node_id] = _normalized_node_attrs(rule.left, node_id, "left")
+
+    for index, nac in enumerate(rule.nacs):
+        if not isinstance(nac, RuleGraph):
+            raise RuleSerializationError(
+                f"nac[{index}] must be a networkx.MultiDiGraph"
+            )
+        for node_id in nac.nodes:
+            if node_id in left_nodes:
+                nac_attrs = _normalized_node_attrs(
+                    nac, node_id, f"nac[{index}] node {node_id}"
+                )
+                if nac_attrs != left_attrs[node_id]:
+                    raise RuleSerializationError(
+                        "NAC nodes shared with left must keep identical labels/props. "
+                        f"Mismatch on node '{node_id}' in nac[{index}]."
+                    )
 
 
 def _build_match_patterns(
@@ -233,6 +260,66 @@ def _build_where_clauses(
     return clauses
 
 
+def _build_nac_clauses(
+    rule: DpoRule,
+    node_vars: Mapping[Any, str],
+    params: _ParamBuilder,
+    *,
+    used_vars: set[str],
+) -> list[str]:
+    clauses: list[str] = []
+    if not rule.nacs:
+        return clauses
+
+    for nac_index, nac in enumerate(rule.nacs):
+        nac_nodes = _sorted_nodes(nac)
+        if not nac_nodes and nac.number_of_edges() == 0:
+            continue
+
+        nac_node_vars: dict[Any, str] = {}
+        local_used = set(used_vars)
+        for node_id in nac_nodes:
+            if node_id in node_vars:
+                nac_node_vars[node_id] = node_vars[node_id]
+            else:
+                nac_node_vars[node_id] = _make_node_var(node_id, local_used)
+
+        patterns: list[str] = []
+        for node_id in nac_nodes:
+            data = nac.nodes[node_id]
+            patterns.append(
+                _node_pattern(node_id, data, nac_node_vars, params, f"nac {nac_index}")
+            )
+
+        edges = _sorted_edges(nac)
+        rel_prefix = f"nac{nac_index}_r"
+        for edge_index, edge in enumerate(edges):
+            patterns.append(
+                _match_edge_pattern(
+                    edge,
+                    nac_node_vars,
+                    params,
+                    edge_index,
+                    context=f"nac {nac_index}",
+                    rel_prefix=rel_prefix,
+                )
+            )
+
+        if not patterns:
+            continue
+
+        subquery = "MATCH " + ", ".join(patterns)
+        nac_where: list[str] = []
+        nac_where.extend(_distinct_node_conditions(nac_nodes, nac_node_vars))
+        nac_where.extend(_distinct_edge_conditions(len(edges), rel_prefix=rel_prefix))
+        if nac_where:
+            subquery += " WHERE " + " AND ".join(nac_where)
+
+        clauses.append(f"NOT EXISTS {{ {subquery} }}")
+
+    return clauses
+
+
 def _distinct_node_conditions(
     left_node_ids: Sequence[Any], node_vars: Mapping[Any, str]
 ) -> list[str]:
@@ -246,11 +333,15 @@ def _distinct_node_conditions(
     return conditions
 
 
-def _distinct_edge_conditions(left_edge_count: int) -> list[str]:
+def _distinct_edge_conditions(
+    left_edge_count: int, *, rel_prefix: str = "r"
+) -> list[str]:
     conditions: list[str] = []
     for index in range(left_edge_count):
         for other in range(index + 1, left_edge_count):
-            conditions.append(f"elementId(r{index}) <> elementId(r{other})")
+            conditions.append(
+                f"elementId({rel_prefix}{index}) <> elementId({rel_prefix}{other})"
+            )
     return conditions
 
 
@@ -340,6 +431,7 @@ def _match_edge_pattern(
     params: _ParamBuilder,
     index: int,
     context: str,
+    rel_prefix: str = "r",
 ) -> str:
     return _edge_pattern(
         edge,
@@ -350,6 +442,7 @@ def _match_edge_pattern(
         require_type=False,
         allow_anonymous=True,
         force_var=True,
+        rel_prefix=rel_prefix,
     )
 
 
@@ -369,6 +462,7 @@ def _create_edge_pattern(
         require_type=True,
         allow_anonymous=False,
         force_var=False,
+        rel_prefix="r",
     )
 
 
@@ -382,6 +476,7 @@ def _edge_pattern(
     require_type: bool,
     allow_anonymous: bool,
     force_var: bool,
+    rel_prefix: str,
 ) -> str:
     source_var = node_vars[edge.source]
     target_var = node_vars[edge.target]
@@ -391,7 +486,7 @@ def _edge_pattern(
         edge.data.get("type"), required=require_type, context=edge_context
     )
     rel_props = _normalize_props(edge.data.get("props"), context=edge_context)
-    rel_scope = f"r{index}"
+    rel_scope = f"{rel_prefix}{index}"
     rel_props_fragment = _props_fragment(
         rel_props, params, rel_scope, context=edge_context
     )

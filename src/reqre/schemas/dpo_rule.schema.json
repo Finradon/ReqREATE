@@ -21,6 +21,13 @@
       "type": "object",
       "additionalProperties": true
     },
+    "nac": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/graph"
+      },
+      "default": []
+    },
     "left": {
       "$ref": "#/$defs/graph"
     },
@@ -31,11 +38,7 @@
       "$ref": "#/$defs/graph"
     }
   },
-  "required": [
-    "left",
-    "interface",
-    "right"
-  ],
+  "required": ["left", "interface", "right"],
   "$defs": {
     "graph": {
       "type": "object",
@@ -82,9 +85,7 @@
           "$ref": "#/$defs/props"
         }
       },
-      "required": [
-        "id"
-      ]
+      "required": ["id"]
     },
     "edge": {
       "type": "object",
@@ -99,10 +100,7 @@
           "minLength": 1
         },
         "key": {
-          "type": [
-            "string",
-            "number"
-          ]
+          "type": ["string", "number"]
         },
         "type": {
           "type": "string"
@@ -111,10 +109,7 @@
           "$ref": "#/$defs/props"
         }
       },
-      "required": [
-        "source",
-        "target"
-      ]
+      "required": ["source", "target"]
     },
     "props": {
       "type": "object",
@@ -123,14 +118,7 @@
       }
     },
     "jsonValue": {
-      "type": [
-        "string",
-        "number",
-        "boolean",
-        "null",
-        "array",
-        "object"
-      ],
+      "type": ["string", "number", "boolean", "null", "array", "object"],
       "items": {
         "$ref": "#/$defs/jsonValue"
       },
