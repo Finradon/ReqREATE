@@ -52,3 +52,4 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 - Edges require `source` and `target` (non-empty strings). Optional fields: `key` (string or number), `type` (string), `props` (any JSON values).
 - `additionalProperties` is `false` for rule objects, graphs, nodes, and edges, so unknown fields will fail validation. Keep custom data inside `metadata` or `props`.
 - When creating rules that should be idempotent, add a `nac` that blocks the rule if a target subgraph already exists (for example, a `SATISFIES` edge from the requirement).
+- Nodes labeled `BuildingElement` must include `props.gh_file` and `props.detail_level` (allowed values: `D1`, `D2`, or `D3`).
