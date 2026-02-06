@@ -240,7 +240,9 @@ def _distinct_node_conditions(
     for index, node_id in enumerate(left_node_ids):
         node_var = node_vars[node_id]
         for other_id in left_node_ids[index + 1 :]:
-            conditions.append(f"id({node_var}) <> id({node_vars[other_id]})")
+            conditions.append(
+                f"elementId({node_var}) <> elementId({node_vars[other_id]})"
+            )
     return conditions
 
 
@@ -248,7 +250,7 @@ def _distinct_edge_conditions(left_edge_count: int) -> list[str]:
     conditions: list[str] = []
     for index in range(left_edge_count):
         for other in range(index + 1, left_edge_count):
-            conditions.append(f"id(r{index}) <> id(r{other})")
+            conditions.append(f"elementId(r{index}) <> elementId(r{other})")
     return conditions
 
 
