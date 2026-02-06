@@ -80,9 +80,10 @@
       },
       {
         "id": "fe_girder",
-        "label": "FunctionalElement",
+        "label": ["FunctionalElement", "BuildingElement"],
         "props": {
-          "name": "Girder"
+          "name": "Girder",
+          "gh_file": "gh_samples/girder_D1.gh"
         }
       }
     ],

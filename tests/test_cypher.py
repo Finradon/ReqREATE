@@ -54,6 +54,58 @@ def test_rule_to_cypher_multilabel_create() -> None:
     }
 
 
+def test_rule_to_cypher_multilabel_from_json() -> None:
+    payload = {
+        "left": {
+            "nodes": [
+                {
+                    "id": "req1",
+                    "label": ["Requirement", "Spec"],
+                    "props": {"id": "REQ-1"},
+                }
+            ],
+            "edges": [],
+        },
+        "interface": {
+            "nodes": [
+                {
+                    "id": "req1",
+                    "label": ["Requirement", "Spec"],
+                    "props": {"id": "REQ-1"},
+                }
+            ],
+            "edges": [],
+        },
+        "right": {
+            "nodes": [
+                {
+                    "id": "req1",
+                    "label": ["Requirement", "Spec"],
+                    "props": {"id": "REQ-1"},
+                },
+                {
+                    "id": "comp1",
+                    "label": ["Component", "Steel"],
+                    "props": {"name": "Beam"},
+                },
+            ],
+            "edges": [],
+        },
+    }
+
+    rule = DpoRule.from_json(payload, validate=True)
+    cypher = rule_to_cypher(rule)
+
+    assert cypher.query == (
+        "MATCH (n_req1:Requirement:Spec {id: $n_req1_id})\n"
+        "CREATE (n_comp1:Component:Steel {name: $n_comp1_name})"
+    )
+    assert cypher.params == {
+        "n_req1_id": "REQ-1",
+        "n_comp1_name": "Beam",
+    }
+
+
 def test_rule_to_cypher_deletes_edge() -> None:
     left = nx.MultiDiGraph()
     interface = nx.MultiDiGraph()

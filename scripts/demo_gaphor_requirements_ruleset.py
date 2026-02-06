@@ -21,11 +21,8 @@ CONFIG = {
     ],
     "json_rules": [
         "ReqD1-1.json",
-        "ReqD1-1.json",
-        "ReqD1-1.json",
-        "ReqD1-1.json",
-        "ReqD1-1.json",
         "ReqD2-1.json",
+        "SubstructureDecomp.json",
         "ReqD2-1-1.json",
     ],
 }
