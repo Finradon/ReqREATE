@@ -39,6 +39,31 @@
         "props": {
           "name": "Superstructure"
         }
+      },
+      {
+        "id": "fe_abutment",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Abutment"
+        }
+      },
+      {
+        "id": "be_abutment_element_1",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement1",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "be_abutment_element_2",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement2",
+          "detail_level": "D1"
+        }
       }
     ],
     "edges": []
@@ -57,6 +82,31 @@
         "label": "FunctionalElement",
         "props": {
           "name": "Superstructure"
+        }
+      },
+      {
+        "id": "fe_abutment",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Abutment"
+        }
+      },
+      {
+        "id": "be_abutment_element_1",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement1",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "be_abutment_element_2",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement2",
+          "detail_level": "D1"
         }
       }
     ],
@@ -79,6 +129,13 @@
         }
       },
       {
+        "id": "fe_abutment",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Abutment"
+        }
+      },
+      {
         "id": "fe_girder",
         "label": "FunctionalElement",
         "props": {
@@ -91,6 +148,24 @@
         "props": {
           "name": "GirderElement",
           "gh_file": "gh_samples/girder_D1.gh",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "be_abutment_element_1",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement1",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "be_abutment_element_2",
+        "label": "BuildingElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "name": "AbutmentElement2",
           "detail_level": "D1"
         }
       }
@@ -110,6 +185,16 @@
         "source": "be_girder_element",
         "target": "fe_girder",
         "type": "DECOMPOSES"
+      },
+      {
+        "source": "be_abutment_element_1",
+        "target": "be_girder_element",
+        "type": "SUPPORTS"
+      },
+      {
+        "source": "be_abutment_element_2",
+        "target": "be_girder_element",
+        "type": "SUPPORTS"
       }
     ]
   }
