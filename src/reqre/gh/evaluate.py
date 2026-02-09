@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import requests
+
 from .registry import (
     MISSING,
     GhDefinition,
@@ -54,6 +56,26 @@ def _load_compute_modules():
             "compute-rhino3d is required to evaluate Grasshopper definitions."
         ) from exc
     return compute_util, gh
+
+
+def _check_compute_health(compute_url: str) -> None:
+    base = compute_url.rstrip("/")
+    health_url = f"{base}/healthcheck"
+    try:
+        response = requests.get(health_url, timeout=5)
+    except requests.RequestException as exc:
+        raise RuntimeError(
+            f"Rhino Compute health check failed at {health_url}: {exc}"
+        ) from exc
+    if response.status_code != 200:
+        raise RuntimeError(
+            "Rhino Compute health check returned "
+            f"{response.status_code} from {health_url}."
+        )
+    if "Healthy" not in response.text:
+        raise RuntimeError(
+            "Rhino Compute health check did not return 'Healthy' " f"from {health_url}."
+        )
 
 
 def _resolve_param_value(raw_params: dict[str, Any], spec: GhInput) -> Any:
@@ -112,6 +134,8 @@ def evaluate_definition(
 ) -> GhEvaluationResult:
     config = config or GhEvaluationConfig()
     resolved_params = resolve_params(definition, params)
+
+    _check_compute_health(config.compute_url)
 
     compute_util, gh = _load_compute_modules()
     compute_util.url = config.compute_url
