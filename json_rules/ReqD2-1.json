@@ -147,7 +147,7 @@
         "label": "BuildingElement",
         "props": {
           "name": "GirderElement",
-          "gh_file": "gh_samples/girder_D1.gh",
+          "gh_file": "gh_samples/Girder.gh",
           "detail_level": "D1"
         }
       },

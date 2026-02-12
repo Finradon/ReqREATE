@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Demo: assemble BuildingElements from Neo4j using GH definitions."""
+
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+import rhino3dm as r3d
+
+from reqre.gh import (
+    DEFAULT_COMPUTE_URL,
+    AssemblyConfig,
+    assemble_from_graph,
+    build_default_registry,
+    util,
+)
+from reqre.neo4j import Neo4jClient
+
+CONFIG = {
+    "detail_level": "D1",
+    "compute_url": DEFAULT_COMPUTE_URL,
+    "gh_root": "gh_samples",
+    "out_stl": "out/assembly.stl",
+    "out_3dm": "smb://nas.ads.mwn.de/ga27guz/TUM/assembly.3dm",
+    "out_obj": None,  # set to "out/assembly.obj" to write OBJ as well
+    "start_name": None,  # example: "AbutmentElement1"
+    "start_id": None,  # example: 123
+    "allow_interface_reuse": False,
+    "flip_normals": True,
+}
+
+
+def _write_3dm(path: str, breps: list[r3d.Brep]) -> None:
+    model = r3d.File3dm()
+    for brep in breps:
+        model.Objects.AddBrep(brep)
+
+    if path.startswith("smb://"):
+        tmp_path = Path("out/assembly.3dm")
+        tmp_path.parent.mkdir(parents=True, exist_ok=True)
+        if not model.Write(str(tmp_path), 7):
+            raise RuntimeError(f"Failed to write temporary 3DM: {tmp_path}")
+        try:
+            # Overwrite behavior in gio copy varies by version; remove first if present.
+            subprocess.run(["gio", "remove", path], check=False)
+            subprocess.run(
+                ["gio", "copy", "--no-target-directory", str(tmp_path), path],
+                check=True,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                "`gio` is required to copy files to smb:// URIs."
+            ) from exc
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError(f"Failed to copy 3DM to SMB path: {path}") from exc
+        return
+
+    out_3dm = Path(path)
+    out_3dm.parent.mkdir(parents=True, exist_ok=True)
+    if not model.Write(str(out_3dm), 7):
+        raise RuntimeError(f"Failed to write 3DM: {out_3dm}")
+
+
+def main() -> None:
+    registry = build_default_registry()
+    config = AssemblyConfig(
+        detail_level=CONFIG["detail_level"],
+        compute_url=CONFIG["compute_url"],
+        gh_root=Path(CONFIG["gh_root"]),
+        start_element_id=CONFIG["start_id"],
+        start_element_name=CONFIG["start_name"],
+        allow_interface_reuse=CONFIG["allow_interface_reuse"],
+        flip_normals=CONFIG["flip_normals"],
+    )
+
+    with Neo4jClient() as client:
+        outcome = assemble_from_graph(client, registry, config=config)
+
+    if outcome.missing_definitions:
+        print("Missing definitions:")
+        for missing in outcome.missing_definitions:
+            print(f"- {missing}")
+
+    if not outcome.connected:
+        print(outcome.reason or "Assembly aborted.")
+        return
+
+    if not outcome.components:
+        print("No components assembled.")
+        return
+
+    out_stl = Path(CONFIG["out_stl"])
+    util.write_stl(str(out_stl), outcome.breps())
+    print(f"Wrote STL to {out_stl}")
+
+    if CONFIG["out_3dm"]:
+        out_3dm = str(CONFIG["out_3dm"])
+        _write_3dm(out_3dm, outcome.breps())
+        print(f"Wrote 3DM to {out_3dm}")
+
+    if CONFIG["out_obj"]:
+        out_obj = Path(CONFIG["out_obj"])
+        util.write_obj(str(out_obj), outcome.breps())
+        print(f"Wrote OBJ to {out_obj}")
+
+    if outcome.order:
+        ordered = [str(node_id) for node_id in outcome.order]
+        print("Assembly order:", ", ".join(ordered))
+
+
+if __name__ == "__main__":
+    main()

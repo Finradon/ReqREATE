@@ -21,6 +21,21 @@ class BuildingElement:
 
 
 @dataclass(frozen=True)
+class BuildingElementEdge:
+    src_id: int
+    dst_id: int
+    rel_type: str
+    props: dict[str, Any]
+
+    def other(self, node_id: int) -> int:
+        if node_id == self.src_id:
+            return self.dst_id
+        if node_id == self.dst_id:
+            return self.src_id
+        raise ValueError(f"Node {node_id} is not part of this edge.")
+
+
+@dataclass(frozen=True)
 class GhGraphRequirements:
     elements: list[BuildingElement]
     elements_by_file: dict[str, list[BuildingElement]]
@@ -55,14 +70,19 @@ def _extract_params(props: dict[str, Any]) -> dict[str, Any]:
     return params
 
 
-def fetch_building_elements(client: Neo4jClient) -> list[BuildingElement]:
-    query = (
-        "MATCH (n:BuildingElement) "
-        "WHERE exists(n.gh_file) "
+def fetch_building_elements(
+    client: Neo4jClient, *, detail_level: str | None = None
+) -> list[BuildingElement]:
+    query = "MATCH (n:BuildingElement) " "WHERE n.gh_file IS NOT NULL "
+    params: dict[str, Any] = {}
+    if detail_level is not None:
+        query += "AND n.detail_level = $detail_level "
+        params["detail_level"] = detail_level
+    query += (
         "RETURN id(n) AS neo4j_id, n.name AS name, n.gh_file AS gh_file, "
         "n.detail_level AS detail_level, properties(n) AS props"
     )
-    rows = client.execute(query)
+    rows = client.execute(query, params if params else None)
     elements: list[BuildingElement] = []
 
     for row in rows:
@@ -81,6 +101,43 @@ def fetch_building_elements(client: Neo4jClient) -> list[BuildingElement]:
             )
         )
     return elements
+
+
+def fetch_building_element_edges(
+    client: Neo4jClient,
+    *,
+    detail_level: str | None = None,
+    relationship_types: list[str] | tuple[str, ...] | None = None,
+) -> list[BuildingElementEdge]:
+    query = (
+        "MATCH (a:BuildingElement)-[r]-(b:BuildingElement) "
+        "WHERE a.gh_file IS NOT NULL AND b.gh_file IS NOT NULL "
+    )
+    params: dict[str, Any] = {}
+    if detail_level is not None:
+        query += (
+            "AND a.detail_level = $detail_level AND b.detail_level = $detail_level "
+        )
+        params["detail_level"] = detail_level
+    if relationship_types:
+        query += "AND type(r) IN $relationship_types "
+        params["relationship_types"] = list(relationship_types)
+    query += (
+        "RETURN id(a) AS src_id, id(b) AS dst_id, type(r) AS rel_type, "
+        "properties(r) AS props"
+    )
+    rows = client.execute(query, params if params else None)
+    edges: list[BuildingElementEdge] = []
+    for row in rows:
+        edges.append(
+            BuildingElementEdge(
+                src_id=row.get("src_id"),
+                dst_id=row.get("dst_id"),
+                rel_type=row.get("rel_type"),
+                props=row.get("props") or {},
+            )
+        )
+    return edges
 
 
 def resolve_requirements(

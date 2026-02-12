@@ -1,5 +1,11 @@
 """Grasshopper evaluation helpers for ReqRE."""
 
+from .assembly import (
+    AssemblyConfig,
+    AssemblyOutcome,
+    assemble_elements,
+    assemble_from_graph,
+)
 from .definitions import (
     build_default_registry,
     register_default_definitions,
@@ -16,7 +22,9 @@ from .evaluate import (
 )
 from .graph import (
     BuildingElement,
+    BuildingElementEdge,
     GhGraphRequirements,
+    fetch_building_element_edges,
     fetch_building_elements,
     load_requirements_from_graph,
     resolve_requirements,
@@ -31,8 +39,13 @@ from .registry import (
 )
 
 __all__ = [
+    "AssemblyConfig",
+    "AssemblyOutcome",
+    "assemble_elements",
+    "assemble_from_graph",
     "DEFAULT_COMPUTE_URL",
     "BuildingElement",
+    "BuildingElementEdge",
     "GhDefinition",
     "GhEvaluationConfig",
     "GhEvaluationResult",
@@ -45,6 +58,7 @@ __all__ = [
     "evaluate_definition",
     "evaluate_element",
     "fetch_building_elements",
+    "fetch_building_element_edges",
     "load_requirements_from_graph",
     "normalize_gh_path",
     "register_default_definitions",

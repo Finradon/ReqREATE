@@ -58,9 +58,18 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
                 GhInput("GRD_height"),
                 GhInput("GRD_width"),
                 GhInput("GRD_length"),
+                GhInput("GRD_offset1"),
+                GhInput("GRD_offset2"),
             ),
             brep_output="GRD_brep",
-            interface_outputs=("GRD_interface1", "GRD_interface2", "GRD_interface3"),
+            interface_outputs=(
+                "GRD_interface1",
+                "GRD_interface2",
+                "GRD_interface3",
+                "GRD_interface4",
+                "GRD_interface5",
+                "GRD_interface6",
+            ),
         )
     )
     registry.register(
@@ -94,6 +103,21 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
             ),
             brep_output="CRB_brep",
             interface_outputs=("CRB_interface1", "CRB_interface2"),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="Abutment",
+            gh_file="gh_samples/abutment_d1.gh",
+            inputs=(
+                GhInput("ABT_height"),
+                GhInput("ABT_width"),
+                GhInput("ABT_ledgewidth"),
+                GhInput("ABT_ledgeheight"),
+                GhInput("ABT_offset"),
+            ),
+            brep_output="ABT_brep",
+            interface_outputs=("ABT_interface1", "ABT_interface2", "ABT_interface3"),
         )
     )
     return registry

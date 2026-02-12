@@ -230,3 +230,4 @@ __marimo__/
 .pre-commit-config.yaml
 
 build_bridge.py
+out/
