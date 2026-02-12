@@ -53,3 +53,12 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 - `additionalProperties` is `false` for rule objects, graphs, nodes, and edges, so unknown fields will fail validation. Keep custom data inside `metadata` or `props`.
 - When creating rules that should be idempotent, add a `nac` that blocks the rule if a target subgraph already exists (for example, a `SATISFIES` edge from the requirement).
 - Nodes labeled `BuildingElement` must include `props.gh_file` and `props.detail_level` (allowed values: `D1`, `D2`, or `D3`).
+
+## GH Assembly Hints
+- Store interface pairing on `BuildingElement` relationships (for example `SUPPORTS`) using edge `props`; avoid relying on global type-to-interface defaults.
+- Recommended edge property keys are `src_interface` and `dst_interface` where `src`/`dst` follow relationship direction.
+- Assembly also accepts aliases such as `source_interface`/`target_interface`, `from_interface`/`to_interface`, and role-specific keys like `abutmentinterface` / `girderinterface`.
+- For repeated relationships to the same component (for example two abutments supporting one girder), set interface props per edge so each connection can use different interface indices.
+- Root selection order in GH assembly is: `start_element_id` override, then `start_element_name` override, then first `Abutment`, otherwise lexicographic fallback.
+- Placement strategy is frontier-based: each step picks one unplaced node adjacent to the placed set and aligns only the new component toward the already assembled component.
+- If an edge has no interface hints, assembly falls back to `AssemblyConfig.interface_priority` (and optional `interface_map` entries if provided).

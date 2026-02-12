@@ -65,10 +65,6 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
             interface_outputs=(
                 "GRD_interface1",
                 "GRD_interface2",
-                "GRD_interface3",
-                "GRD_interface4",
-                "GRD_interface5",
-                "GRD_interface6",
             ),
         )
     )

@@ -28,7 +28,7 @@ CONFIG = {
     "show_interface_axes_3dm": True,
     "interface_axis_length": 400.0,
     "start_name": None,  # example: "AbutmentElement1"
-    "start_id": None,  # example: 123
+    "start_id": None,  # example: "4:7f38d0f5-...:123"
     "allow_interface_reuse": False,
     "flip_normals": True,
 }

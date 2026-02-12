@@ -18,6 +18,8 @@ from .graph import (
 )
 from .registry import GhDefinition, GhRegistry, normalize_gh_path
 
+NodeId = str | int
+
 SOURCE_IFACE_KEYS = (
     "src_interface",
     "src_iface",
@@ -43,7 +45,7 @@ TARGET_IFACE_KEYS = (
 def _default_interface_priority() -> dict[str, tuple[int, ...]]:
     return {
         "Abutment": (0, 1, 2),
-        "Girder": (0, 1, 2, 3, 4, 5),
+        "Girder": (0, 1),
     }
 
 
@@ -67,9 +69,7 @@ def _default_params() -> dict[str, dict[str, Any]]:
 
 
 def _default_interface_map() -> dict[tuple[str, str, str], tuple[Any, Any]]:
-    return {
-        ("Abutment", "SUPPORTS", "Girder"): ("ABT_interface2", "GRD_interface5"),
-    }
+    return {}
 
 
 @dataclass(frozen=True)
@@ -86,7 +86,7 @@ class AssemblyConfig:
     interface_map: dict[tuple[str, str, str], tuple[Any, Any]] = field(
         default_factory=_default_interface_map
     )
-    start_element_id: int | None = None
+    start_element_id: NodeId | None = None
     start_element_name: str | None = None
     allow_interface_reuse: bool = False
     flip_normals: bool = True
@@ -96,10 +96,10 @@ class AssemblyConfig:
 class AssemblyOutcome:
     connected: bool
     reason: str | None = None
-    root_id: int | None = None
-    order: list[int] = field(default_factory=list)
-    components: dict[int, dict[str, Any]] = field(default_factory=dict)
-    elements: dict[int, BuildingElement] = field(default_factory=dict)
+    root_id: NodeId | None = None
+    order: list[NodeId] = field(default_factory=list)
+    components: dict[NodeId, dict[str, Any]] = field(default_factory=dict)
+    elements: dict[NodeId, BuildingElement] = field(default_factory=dict)
     edges: list[BuildingElementEdge] = field(default_factory=list)
     missing_definitions: list[str] = field(default_factory=list)
 
@@ -133,8 +133,8 @@ def assemble_elements(
     *,
     config: AssemblyConfig,
 ) -> AssemblyOutcome:
-    elements_by_id: dict[int, BuildingElement] = {}
-    definitions: dict[int, GhDefinition] = {}
+    elements_by_id: dict[NodeId, BuildingElement] = {}
+    definitions: dict[NodeId, GhDefinition] = {}
     missing_definitions: list[str] = []
     allowed = {name.lower() for name in config.allowed_definitions}
 
@@ -174,9 +174,9 @@ def assemble_elements(
     root_id = _choose_root(elements_by_id, definitions, config)
     outcome.root_id = root_id
 
-    placed: dict[int, dict[str, Any]] = {}
-    used_ifaces: dict[int, set[int]] = {}
-    order: list[int] = []
+    placed: dict[NodeId, dict[str, Any]] = {}
+    used_ifaces: dict[NodeId, set[int]] = {}
+    order: list[NodeId] = []
 
     eval_config = GhEvaluationConfig(
         compute_url=config.compute_url, gh_root=config.gh_root
@@ -194,71 +194,79 @@ def assemble_elements(
 
     edges_by_node = _edges_by_node(elements_by_id.keys(), filtered_edges)
 
-    pending = [root_id]
-    while pending:
-        current_id = pending.pop(0)
+    while len(placed) < len(elements_by_id):
+        frontier: list[tuple[int, BuildingElementEdge, int]] = []
+        for anchor_id in order:
+            anchor_edges = sorted(
+                edges_by_node.get(anchor_id, []),
+                key=lambda edge: _neighbor_sort_key(edge, anchor_id, elements_by_id),
+            )
+            for edge in anchor_edges:
+                moving_id = edge.other(anchor_id)
+                if moving_id in placed:
+                    continue
+                frontier.append((anchor_id, edge, moving_id))
+
+        if not frontier:
+            outcome.reason = (
+                "Assembly frontier exhausted before placing all components."
+            )
+            return outcome
+
+        # Grow from already assembled geometry; only move the unplaced component.
+        current_id, edge, neighbor_id = frontier[0]
         current_comp = placed[current_id]
         current_def = current_comp["definition"]
         current_used = used_ifaces.setdefault(current_id, set())
 
-        neighbors = sorted(
-            edges_by_node.get(current_id, []),
-            key=lambda edge: _neighbor_sort_key(edge, current_id, elements_by_id),
+        neighbor_def = definitions[neighbor_id]
+        neighbor_comp = _evaluate_component(
+            elements_by_id[neighbor_id],
+            neighbor_def,
+            eval_config,
+            config.default_params,
         )
-        for edge in neighbors:
-            neighbor_id = edge.other(current_id)
-            if neighbor_id in placed:
-                continue
+        neighbor_used = used_ifaces.setdefault(neighbor_id, set())
 
-            neighbor_def = definitions[neighbor_id]
-            neighbor_comp = _evaluate_component(
-                elements_by_id[neighbor_id],
-                neighbor_def,
-                eval_config,
-                config.default_params,
-            )
-            neighbor_used = used_ifaces.setdefault(neighbor_id, set())
+        src_hint, dst_hint = _edge_interface_hints(
+            edge, current_id, config.interface_map, current_def, neighbor_def
+        )
 
-            src_hint, dst_hint = _edge_interface_hints(
-                edge, current_id, config.interface_map, current_def, neighbor_def
-            )
+        src_idx = _pick_interface_index(
+            current_def,
+            current_comp["iface_list"],
+            current_used,
+            config.interface_priority.get(current_def.name, ()),
+            src_hint,
+            allow_reuse=config.allow_interface_reuse,
+        )
+        dst_idx = _pick_interface_index(
+            neighbor_def,
+            neighbor_comp["iface_list"],
+            neighbor_used,
+            config.interface_priority.get(neighbor_def.name, ()),
+            dst_hint,
+            allow_reuse=config.allow_interface_reuse,
+        )
 
-            src_idx = _pick_interface_index(
-                current_def,
-                current_comp["iface_list"],
-                current_used,
-                config.interface_priority.get(current_def.name, ()),
-                src_hint,
-                allow_reuse=config.allow_interface_reuse,
-            )
-            dst_idx = _pick_interface_index(
-                neighbor_def,
-                neighbor_comp["iface_list"],
-                neighbor_used,
-                config.interface_priority.get(neighbor_def.name, ()),
-                dst_hint,
-                allow_reuse=config.allow_interface_reuse,
+        target_plane = current_comp["iface_list"][src_idx]
+        source_plane = neighbor_comp["iface_list"][dst_idx]
+        if target_plane is None or source_plane is None:
+            raise RuntimeError(
+                "Missing interface plane while assembling components "
+                f"(src={current_def.name}:{src_idx}, dst={neighbor_def.name}:{dst_idx})."
             )
 
-            target_plane = current_comp["iface_list"][src_idx]
-            source_plane = neighbor_comp["iface_list"][dst_idx]
-            if target_plane is None or source_plane is None:
-                raise RuntimeError(
-                    "Missing interface plane while assembling components "
-                    f"(src={current_def.name}:{src_idx}, dst={neighbor_def.name}:{dst_idx})."
-                )
+        # if config.flip_normals:
+        #     target_plane = _flip_plane(target_plane)
+        #     source_plane = _flip_plane(source_plane)
 
-            # if config.flip_normals:
-            #     target_plane = _flip_plane(target_plane)
-            #     source_plane = _flip_plane(source_plane)
+        util.align_component(neighbor_comp, source_plane, target_plane)
 
-            util.align_component(neighbor_comp, source_plane, target_plane)
-
-            placed[neighbor_id] = neighbor_comp
-            current_used.add(src_idx)
-            neighbor_used.add(dst_idx)
-            order.append(neighbor_id)
-            pending.append(neighbor_id)
+        placed[neighbor_id] = neighbor_comp
+        current_used.add(src_idx)
+        neighbor_used.add(dst_idx)
+        order.append(neighbor_id)
 
     outcome.connected = True
     outcome.components = placed
@@ -293,10 +301,10 @@ def _definition_by_name(registry: GhRegistry, name: str) -> GhDefinition | None:
 
 
 def _choose_root(
-    elements: dict[int, BuildingElement],
-    definitions: dict[int, GhDefinition],
+    elements: dict[NodeId, BuildingElement],
+    definitions: dict[NodeId, GhDefinition],
     config: AssemblyConfig,
-) -> int:
+) -> NodeId:
     if config.start_element_id is not None and config.start_element_id in elements:
         return config.start_element_id
     if config.start_element_name:
@@ -347,10 +355,10 @@ def _evaluate_component(
 
 
 def _edges_by_node(
-    node_ids: Iterable[int],
+    node_ids: Iterable[NodeId],
     edges: Iterable[BuildingElementEdge],
-) -> dict[int, list[BuildingElementEdge]]:
-    adj: dict[int, list[BuildingElementEdge]] = {node_id: [] for node_id in node_ids}
+) -> dict[NodeId, list[BuildingElementEdge]]:
+    adj: dict[NodeId, list[BuildingElementEdge]] = {node_id: [] for node_id in node_ids}
     for edge in edges:
         if edge.src_id in adj:
             adj[edge.src_id].append(edge)
@@ -360,7 +368,7 @@ def _edges_by_node(
 
 
 def _is_fully_connected(
-    node_ids: Iterable[int], edges: Iterable[BuildingElementEdge]
+    node_ids: Iterable[NodeId], edges: Iterable[BuildingElementEdge]
 ) -> bool:
     node_list = list(node_ids)
     if not node_list:
@@ -388,29 +396,64 @@ def _is_fully_connected(
 
 def _edge_interface_hints(
     edge: BuildingElementEdge,
-    current_id: int,
+    current_id: NodeId,
     interface_map: dict[tuple[str, str, str], tuple[Any, Any]],
     current_def: GhDefinition,
     neighbor_def: GhDefinition,
 ) -> tuple[Any | None, Any | None]:
+    current_is_src = current_id == edge.src_id
+    edge_src_def = current_def if current_is_src else neighbor_def
+    edge_dst_def = neighbor_def if current_is_src else current_def
+
+    edge_src_hint = _first_prop(
+        edge.props, SOURCE_IFACE_KEYS + _interface_prop_aliases(edge_src_def.name)
+    )
+    edge_dst_hint = _first_prop(
+        edge.props, TARGET_IFACE_KEYS + _interface_prop_aliases(edge_dst_def.name)
+    )
+
+    if current_is_src:
+        current_hint = edge_src_hint
+        neighbor_hint = edge_dst_hint
+    else:
+        current_hint = edge_dst_hint
+        neighbor_hint = edge_src_hint
+
     mapping = _lookup_interface_map(
         interface_map, current_def.name, edge.rel_type, neighbor_def.name
     )
-    if mapping is not None:
-        return mapping
-    reverse = _lookup_interface_map(
-        interface_map, neighbor_def.name, edge.rel_type, current_def.name
-    )
-    if reverse is not None:
-        return reverse[1], reverse[0]
+    if mapping is None:
+        reverse = _lookup_interface_map(
+            interface_map, neighbor_def.name, edge.rel_type, current_def.name
+        )
+        if reverse is not None:
+            mapping = (reverse[1], reverse[0])
 
-    if current_id == edge.src_id:
-        src_hint = _first_prop(edge.props, SOURCE_IFACE_KEYS)
-        dst_hint = _first_prop(edge.props, TARGET_IFACE_KEYS)
-    else:
-        src_hint = _first_prop(edge.props, TARGET_IFACE_KEYS)
-        dst_hint = _first_prop(edge.props, SOURCE_IFACE_KEYS)
-    return src_hint, dst_hint
+    if mapping is not None:
+        if current_hint is None:
+            current_hint = mapping[0]
+        if neighbor_hint is None:
+            neighbor_hint = mapping[1]
+
+    return current_hint, neighbor_hint
+
+
+def _interface_prop_aliases(definition_name: str) -> tuple[str, ...]:
+    token = "".join(ch.lower() for ch in definition_name if ch.isalnum())
+    if not token:
+        return ()
+    aliases = (
+        f"{token}_interface",
+        f"{token}_iface",
+        f"interface_{token}",
+        f"iface_{token}",
+        f"{token}interface",
+        f"{token}iface",
+    )
+    if token == "girder":
+        # Keep compatibility with existing misspelling found in example data.
+        aliases += ("grder_interface", "grderiface", "grderinterface")
+    return aliases
 
 
 def _lookup_interface_map(
@@ -430,10 +473,21 @@ def _lookup_interface_map(
 
 
 def _first_prop(props: dict[str, Any], keys: Iterable[str]) -> Any | None:
+    normalized_props: dict[str, Any] = {}
+    for key, value in props.items():
+        if not isinstance(key, str):
+            continue
+        normalized_props.setdefault(_normalize_prop_key(key), value)
+
     for key in keys:
-        if key in props:
-            return props[key]
+        normalized_key = _normalize_prop_key(key)
+        if normalized_key in normalized_props:
+            return normalized_props[normalized_key]
     return None
+
+
+def _normalize_prop_key(key: str) -> str:
+    return "".join(ch.lower() for ch in key if ch.isalnum())
 
 
 def _pick_interface_index(
@@ -521,13 +575,13 @@ def _coerce_interface_index(
 
 def _neighbor_sort_key(
     edge: BuildingElementEdge,
-    current_id: int,
-    elements: dict[int, BuildingElement],
-) -> tuple[str, int]:
+    current_id: NodeId,
+    elements: dict[NodeId, BuildingElement],
+) -> tuple[str, str]:
     other_id = edge.other(current_id)
     element = elements.get(other_id)
     name = (element.name or "").lower() if element else ""
-    return name, other_id
+    return name, str(other_id)
 
 
 def _plane_normal(pl: r3d.Plane) -> r3d.Vector3d:

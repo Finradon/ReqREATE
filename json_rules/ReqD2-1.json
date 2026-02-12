@@ -189,12 +189,20 @@
       {
         "source": "be_abutment_element_1",
         "target": "be_girder_element",
-        "type": "SUPPORTS"
+        "type": "SUPPORTS",
+        "props": {
+          "src_interface": "ABT_interface2",
+          "dst_interface": "GRD_interface1"
+        }
       },
       {
         "source": "be_abutment_element_2",
         "target": "be_girder_element",
-        "type": "SUPPORTS"
+        "type": "SUPPORTS",
+        "props": {
+          "src_interface": "ABT_interface2",
+          "dst_interface": "GRD_interface2"
+        }
       }
     ]
   }

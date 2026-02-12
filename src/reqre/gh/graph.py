@@ -9,10 +9,12 @@ from reqre.neo4j import Neo4jClient
 
 from .registry import GhDefinition, GhRegistry, normalize_gh_path
 
+NodeId = str | int
+
 
 @dataclass(frozen=True)
 class BuildingElement:
-    neo4j_id: int
+    neo4j_id: str
     gh_file: str
     name: str | None
     detail_level: str | None
@@ -22,12 +24,12 @@ class BuildingElement:
 
 @dataclass(frozen=True)
 class BuildingElementEdge:
-    src_id: int
-    dst_id: int
+    src_id: str
+    dst_id: str
     rel_type: str
     props: dict[str, Any]
 
-    def other(self, node_id: int) -> int:
+    def other(self, node_id: NodeId) -> str:
         if node_id == self.src_id:
             return self.dst_id
         if node_id == self.dst_id:
@@ -79,7 +81,7 @@ def fetch_building_elements(
         query += "AND n.detail_level = $detail_level "
         params["detail_level"] = detail_level
     query += (
-        "RETURN id(n) AS neo4j_id, n.name AS name, n.gh_file AS gh_file, "
+        "RETURN elementId(n) AS neo4j_id, n.name AS name, n.gh_file AS gh_file, "
         "n.detail_level AS detail_level, properties(n) AS props"
     )
     rows = client.execute(query, params if params else None)
@@ -123,7 +125,9 @@ def fetch_building_element_edges(
         query += "AND type(r) IN $relationship_types "
         params["relationship_types"] = list(relationship_types)
     query += (
-        "RETURN id(a) AS src_id, id(b) AS dst_id, type(r) AS rel_type, "
+        "WITH r "
+        "RETURN elementId(startNode(r)) AS src_id, "
+        "elementId(endNode(r)) AS dst_id, type(r) AS rel_type, "
         "properties(r) AS props"
     )
     rows = client.execute(query, params if params else None)
