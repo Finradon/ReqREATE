@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 import subprocess
 from pathlib import Path
 
@@ -23,7 +24,9 @@ CONFIG = {
     "gh_root": "gh_samples",
     "out_stl": "out/assembly.stl",
     "out_3dm": "smb://nas.ads.mwn.de/ga27guz/TUM/assembly.3dm",
-    "out_obj": None,  # set to "out/assembly.obj" to write OBJ as well
+    "out_obj": "out/assembly.obj",
+    "show_interface_axes_3dm": True,
+    "interface_axis_length": 400.0,
     "start_name": None,  # example: "AbutmentElement1"
     "start_id": None,  # example: 123
     "allow_interface_reuse": False,
@@ -31,10 +34,90 @@ CONFIG = {
 }
 
 
-def _write_3dm(path: str, breps: list[r3d.Brep]) -> None:
+def _attrs(name: str, color: tuple[int, int, int, int]) -> r3d.ObjectAttributes:
+    attrs = r3d.ObjectAttributes()
+    attrs.Name = name
+    attrs.ColorSource = r3d.ObjectColorSource.ColorFromObject
+    attrs.ObjectColor = color
+    return attrs
+
+
+def _scale_vec(axis: r3d.Vector3d, length: float) -> r3d.Vector3d | None:
+    mag = math.sqrt(axis.X * axis.X + axis.Y * axis.Y + axis.Z * axis.Z)
+    if mag <= 1e-12:
+        return None
+    scale = length / mag
+    return r3d.Vector3d(axis.X * scale, axis.Y * scale, axis.Z * scale)
+
+
+def _point_plus_vec(point: r3d.Point3d, vec: r3d.Vector3d) -> r3d.Point3d:
+    return r3d.Point3d(point.X + vec.X, point.Y + vec.Y, point.Z + vec.Z)
+
+
+def _add_interface_visuals(
+    model: r3d.File3dm,
+    components: dict[int, dict[str, object]],
+    *,
+    axis_length: float,
+) -> None:
+    if axis_length <= 0:
+        return
+
+    for node_id, comp in sorted(components.items()):
+        iface_list = comp.get("iface_list")
+        if not isinstance(iface_list, list):
+            continue
+        for idx, iface in enumerate(iface_list, start=1):
+            if iface is None:
+                continue
+            if not isinstance(iface, r3d.Plane):
+                continue
+
+            origin_name = f"BE_{node_id}_iface_{idx}_origin"
+            model.Objects.AddPoint(
+                iface.Origin, _attrs(origin_name, (255, 220, 0, 255))
+            )
+
+            x_axis = _scale_vec(iface.XAxis, axis_length)
+            y_axis = _scale_vec(iface.YAxis, axis_length)
+            z_raw = r3d.Vector3d.CrossProduct(iface.XAxis, iface.YAxis)
+            z_axis = _scale_vec(z_raw, axis_length)
+
+            if x_axis is not None:
+                model.Objects.AddLine(
+                    iface.Origin,
+                    _point_plus_vec(iface.Origin, x_axis),
+                    _attrs(f"BE_{node_id}_iface_{idx}_x", (255, 0, 0, 255)),
+                )
+            if y_axis is not None:
+                model.Objects.AddLine(
+                    iface.Origin,
+                    _point_plus_vec(iface.Origin, y_axis),
+                    _attrs(f"BE_{node_id}_iface_{idx}_y", (0, 200, 0, 255)),
+                )
+            if z_axis is not None:
+                model.Objects.AddLine(
+                    iface.Origin,
+                    _point_plus_vec(iface.Origin, z_axis),
+                    _attrs(f"BE_{node_id}_iface_{idx}_z", (0, 120, 255, 255)),
+                )
+
+
+def _write_3dm(
+    path: str,
+    components: dict[int, dict[str, object]],
+    *,
+    show_interface_axes: bool,
+    interface_axis_length: float,
+) -> None:
     model = r3d.File3dm()
-    for brep in breps:
-        model.Objects.AddBrep(brep)
+    for node_id, comp in sorted(components.items()):
+        brep = comp.get("brep")
+        if isinstance(brep, r3d.Brep):
+            model.Objects.AddBrep(brep, _attrs(f"BE_{node_id}", (220, 220, 220, 255)))
+
+    if show_interface_axes:
+        _add_interface_visuals(model, components, axis_length=interface_axis_length)
 
     if path.startswith("smb://"):
         tmp_path = Path("out/assembly.3dm")
@@ -96,7 +179,12 @@ def main() -> None:
 
     if CONFIG["out_3dm"]:
         out_3dm = str(CONFIG["out_3dm"])
-        _write_3dm(out_3dm, outcome.breps())
+        _write_3dm(
+            out_3dm,
+            outcome.components,
+            show_interface_axes=bool(CONFIG["show_interface_axes_3dm"]),
+            interface_axis_length=float(CONFIG["interface_axis_length"]),
+        )
         print(f"Wrote 3DM to {out_3dm}")
 
     if CONFIG["out_obj"]:

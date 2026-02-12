@@ -50,14 +50,14 @@ def _default_interface_priority() -> dict[str, tuple[int, ...]]:
 def _default_params() -> dict[str, dict[str, Any]]:
     return {
         "Abutment": {
-            "ABT_height": 2000.0,
+            "ABT_height": 5000.0,
             "ABT_width": 5000.0,
             "ABT_ledgewidth": 1000.0,
             "ABT_ledgeheight": 500.0,
             "ABT_offset": 500.0,
         },
         "Girder": {
-            "GRD_length": 10000.0,
+            "GRD_length": 20000.0,
             "GRD_width": 5000.0,
             "GRD_height": 500.0,
             "GRD_offset1": 500.0,

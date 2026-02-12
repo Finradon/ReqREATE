@@ -323,11 +323,10 @@ def write_obj(path: str, breps: list[r3d.Brep]) -> None:
             raise TypeError("Unsupported face type in mesh")
 
         for brep in breps:
+            obj_index += 1
+            f.write(f"o Brep_{obj_index}\n")
             meshes = _brep_meshes(brep)
             for mesh in meshes:
-                obj_index += 1
-                f.write(f"o Brep_{obj_index}\n")
-
                 vcount = _count(mesh.Vertices)
                 for i in range(vcount):
                     v = _item(mesh.Vertices, i)
