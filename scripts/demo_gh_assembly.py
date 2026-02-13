@@ -24,7 +24,7 @@ CONFIG = {
     "relationship_types": ("INTERFACES",),
     "allowed_definitions": ("Abutment", "Girder"),
     "run_d1_param_resolver": True,
-    "write_shared_parameter_nodes": True,
+    "write_shared_parameter_nodes": False,
     "compute_url": DEFAULT_COMPUTE_URL,
     "gh_root": "gh_samples",
     "out_stl": "out/assembly.stl",

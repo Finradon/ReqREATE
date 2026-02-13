@@ -24,6 +24,13 @@ RETURN DISTINCT
 ORDER BY abutment_id, girder_id, dst_interface
 """
 
+_D1_BOUND_PARAM_QUERY = """
+MATCH (n:BuildingElement)-[u:USES_PARAM]->(p:Parameter)
+WHERE elementId(n) IN [$abutment_id, $girder_id]
+RETURN elementId(n) AS node_id, u.input AS input, p.value AS value
+ORDER BY node_id, input
+"""
+
 _D1_UPSERT_QUERY = """
 MATCH (a:BuildingElement) WHERE elementId(a) = $abutment_id
 MATCH (g:BuildingElement) WHERE elementId(g) = $girder_id
@@ -50,6 +57,27 @@ SET po.value = $offset,
     po.updated_at = datetime()
 MERGE (a)-[:USES_PARAM {input: 'ABT_offset'}]->(po)
 MERGE (g)-[:USES_PARAM {input: 'GRD_offset2'}]->(po)
+"""
+
+_D1_SYNC_BOUND_PARAM_VALUES_QUERY = """
+MATCH (n:BuildingElement)-[u:USES_PARAM]->(p:Parameter)
+WHERE elementId(n) IN [$abutment_id, $girder_id]
+WITH n, u, p,
+CASE
+  WHEN elementId(n) = $abutment_id AND u.input = 'ABT_width' THEN $ABT_width
+  WHEN elementId(n) = $girder_id AND u.input = 'GRD_width' THEN $GRD_width
+  WHEN elementId(n) = $abutment_id AND u.input = 'ABT_ledgeheight' THEN $ABT_ledgeheight
+  WHEN elementId(n) = $girder_id AND u.input = 'GRD_height' THEN $GRD_height
+  WHEN elementId(n) = $abutment_id AND u.input = 'ABT_ledgewidth' THEN $ABT_ledgewidth
+  WHEN elementId(n) = $girder_id AND u.input = 'GRD_offset1' THEN $GRD_offset1
+  WHEN elementId(n) = $abutment_id AND u.input = 'ABT_offset' THEN $ABT_offset
+  WHEN elementId(n) = $girder_id AND u.input = 'GRD_offset2' THEN $GRD_offset2
+  ELSE null
+END AS resolved_value
+WHERE resolved_value IS NOT NULL
+SET p.value = resolved_value,
+    p.unit = coalesce(p.unit, 'mm'),
+    p.updated_at = datetime()
 """
 
 _D1_UPSERT_ONLY_GH_PARAMS_QUERY = """
@@ -132,6 +160,8 @@ def _pick_float(*values: Any) -> float | None:
 def _resolve_d1_pair_values(
     abutment_props: Mapping[str, Any],
     girder_props: Mapping[str, Any],
+    abutment_bound: Mapping[str, float],
+    girder_bound: Mapping[str, float],
     abutment_defaults: Mapping[str, Any],
     girder_defaults: Mapping[str, Any],
 ) -> tuple[dict[str, float], dict[str, float]]:
@@ -139,23 +169,29 @@ def _resolve_d1_pair_values(
     girder_params = _extract_param_map(girder_props)
 
     width = _pick_float(
+        abutment_bound.get("ABT_width"),
+        girder_bound.get("GRD_width"),
         abutment_params.get("ABT_width"),
         girder_params.get("GRD_width"),
         abutment_defaults.get("ABT_width"),
         girder_defaults.get("GRD_width"),
     )
     ledge_height = _pick_float(
+        abutment_bound.get("ABT_ledgeheight"),
+        girder_bound.get("GRD_height"),
         abutment_params.get("ABT_ledgeheight"),
         girder_params.get("GRD_height"),
         abutment_defaults.get("ABT_ledgeheight"),
         girder_defaults.get("GRD_height"),
     )
     ledge_width = _pick_float(
+        abutment_bound.get("ABT_ledgewidth"),
         abutment_params.get("ABT_ledgewidth"),
         abutment_defaults.get("ABT_ledgewidth"),
     )
     if ledge_width is None:
         existing_offset1 = _pick_float(
+            girder_bound.get("GRD_offset1"),
             girder_params.get("GRD_offset1"),
             girder_defaults.get("GRD_offset1"),
         )
@@ -163,6 +199,8 @@ def _resolve_d1_pair_values(
             ledge_width = existing_offset1 * 2.0
 
     offset = _pick_float(
+        abutment_bound.get("ABT_offset"),
+        girder_bound.get("GRD_offset2"),
         abutment_params.get("ABT_offset"),
         girder_params.get("GRD_offset2"),
         abutment_defaults.get("ABT_offset"),
@@ -221,6 +259,28 @@ def _assert_compatible(
             )
 
 
+def _bound_params_for_pair(
+    client: Neo4jClient, *, abutment_id: str, girder_id: str
+) -> tuple[dict[str, float], dict[str, float]]:
+    rows = client.execute(
+        _D1_BOUND_PARAM_QUERY,
+        {"abutment_id": abutment_id, "girder_id": girder_id},
+    )
+    abutment_bound: dict[str, float] = {}
+    girder_bound: dict[str, float] = {}
+    for row in rows:
+        node_id = row.get("node_id")
+        input_name = row.get("input")
+        value = _as_float(row.get("value"))
+        if node_id is None or not isinstance(input_name, str) or value is None:
+            continue
+        if node_id == abutment_id:
+            abutment_bound[input_name] = value
+        elif node_id == girder_id:
+            girder_bound[input_name] = value
+    return abutment_bound, girder_bound
+
+
 def resolve_d1_parameters(
     client: Neo4jClient,
     *,
@@ -249,9 +309,14 @@ def resolve_d1_parameters(
         if not abutment_id or not girder_id:
             continue
 
+        abutment_bound, girder_bound = _bound_params_for_pair(
+            client, abutment_id=abutment_id, girder_id=girder_id
+        )
         abutment_updates, girder_updates = _resolve_d1_pair_values(
             row.get("abutment_props") or {},
             row.get("girder_props") or {},
+            abutment_bound,
+            girder_bound,
             abutment_defaults,
             girder_defaults,
         )
@@ -279,7 +344,17 @@ def resolve_d1_parameters(
             "width": abutment_updates["ABT_width"],
             "ledge_height": abutment_updates["ABT_ledgeheight"],
             "offset": abutment_updates["ABT_offset"],
+            "ABT_width": abutment_updates["ABT_width"],
+            "GRD_width": girder_updates["GRD_width"],
+            "ABT_ledgeheight": abutment_updates["ABT_ledgeheight"],
+            "GRD_height": girder_updates["GRD_height"],
+            "ABT_ledgewidth": abutment_updates["ABT_ledgewidth"],
+            "GRD_offset1": girder_updates["GRD_offset1"],
+            "ABT_offset": abutment_updates["ABT_offset"],
+            "GRD_offset2": girder_updates["GRD_offset2"],
         }
+
+        client.execute(_D1_SYNC_BOUND_PARAM_VALUES_QUERY, payload)
 
         if write_shared_parameter_nodes:
             client.execute(_D1_UPSERT_QUERY, payload)

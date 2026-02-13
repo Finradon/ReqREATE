@@ -168,6 +168,78 @@
           "name": "AbutmentElement2",
           "detail_level": "D1"
         }
+      },
+      {
+        "id": "param_d1_i1_width",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I1_WIDTH",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i1_ledge_height",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I1_LEDGE_HEIGHT",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i1_ledge_width",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I1_LEDGE_WIDTH",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i1_offset",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I1_OFFSET",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i2_width",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I2_WIDTH",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i2_ledge_height",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I2_LEDGE_HEIGHT",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i2_ledge_width",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I2_LEDGE_WIDTH",
+          "value": null,
+          "unit": "mm"
+        }
+      },
+      {
+        "id": "param_d1_i2_offset",
+        "label": ["Parameter", "D1InputParameter"],
+        "props": {
+          "key": "D1_I2_OFFSET",
+          "value": null,
+          "unit": "mm"
+        }
       }
     ],
     "edges": [
@@ -202,6 +274,118 @@
         "props": {
           "src_interface": "ABT_interface2",
           "dst_interface": "GRD_interface2"
+        }
+      },
+      {
+        "source": "be_abutment_element_1",
+        "target": "param_d1_i1_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_width"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i1_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_width"
+        }
+      },
+      {
+        "source": "be_abutment_element_1",
+        "target": "param_d1_i1_ledge_height",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_ledgeheight"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i1_ledge_height",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_height"
+        }
+      },
+      {
+        "source": "be_abutment_element_1",
+        "target": "param_d1_i1_ledge_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_ledgewidth"
+        }
+      },
+      {
+        "source": "be_abutment_element_1",
+        "target": "param_d1_i1_offset",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_offset"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i1_offset",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_offset2"
+        }
+      },
+      {
+        "source": "be_abutment_element_2",
+        "target": "param_d1_i2_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_width"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i2_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_width"
+        }
+      },
+      {
+        "source": "be_abutment_element_2",
+        "target": "param_d1_i2_ledge_height",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_ledgeheight"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i2_ledge_height",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_height"
+        }
+      },
+      {
+        "source": "be_abutment_element_2",
+        "target": "param_d1_i2_ledge_width",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_ledgewidth"
+        }
+      },
+      {
+        "source": "be_abutment_element_2",
+        "target": "param_d1_i2_offset",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "ABT_offset"
+        }
+      },
+      {
+        "source": "be_girder_element",
+        "target": "param_d1_i2_offset",
+        "type": "USES_PARAM",
+        "props": {
+          "input": "GRD_offset2"
         }
       }
     ]

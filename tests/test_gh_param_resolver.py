@@ -40,6 +40,8 @@ def test_resolve_d1_pair_values_uses_abutment_values_and_derives_offset1() -> No
     abutment_updates, girder_updates = _resolve_d1_pair_values(
         abutment_props,
         girder_props,
+        {},
+        {},
         abutment_defaults,
         girder_defaults,
     )
@@ -75,6 +77,8 @@ def test_resolve_d1_pair_values_can_backsolve_ledgewidth_from_girder_offset1() -
     abutment_updates, girder_updates = _resolve_d1_pair_values(
         abutment_props,
         girder_props,
+        {},
+        {},
         abutment_defaults,
         girder_defaults,
     )
@@ -107,8 +111,8 @@ def test_resolve_d1_parameters_writes_updates() -> None:
 
     assert len(resolved) == 1
     assert resolved[0].girder_updates["GRD_offset1"] == 600.0
-    assert len(client.calls) == 2
-    _, params = client.calls[1]
+    assert len(client.calls) == 4
+    _, params = client.calls[3]
     assert params["abutment_id"] == "a1"
     assert params["girder_id"] == "g1"
     assert params["girder_updates"]["GRD_width"] == 6200.0
@@ -152,3 +156,35 @@ def test_resolve_d1_parameters_detects_conflicting_updates_for_same_girder() -> 
 
     with pytest.raises(RuntimeError, match="Conflicting resolved value"):
         resolve_d1_parameters(client, write_shared_parameter_nodes=False)
+
+
+def test_resolve_d1_pair_values_prefers_bound_parameter_values() -> None:
+    abutment_props = {"gh_params": {"ABT_width": 5000.0, "ABT_ledgewidth": 1000.0}}
+    girder_props = {"gh_params": {"GRD_width": 5000.0}}
+    abutment_bound = {
+        "ABT_width": 6600.0,
+        "ABT_ledgeheight": 800.0,
+        "ABT_ledgewidth": 1600.0,
+        "ABT_offset": 550.0,
+    }
+    girder_bound = {}
+    abutment_defaults = {}
+    girder_defaults = {}
+
+    abutment_updates, girder_updates = _resolve_d1_pair_values(
+        abutment_props,
+        girder_props,
+        abutment_bound,
+        girder_bound,
+        abutment_defaults,
+        girder_defaults,
+    )
+
+    assert abutment_updates["ABT_width"] == 6600.0
+    assert abutment_updates["ABT_ledgeheight"] == 800.0
+    assert abutment_updates["ABT_ledgewidth"] == 1600.0
+    assert abutment_updates["ABT_offset"] == 550.0
+    assert girder_updates["GRD_width"] == 6600.0
+    assert girder_updates["GRD_height"] == 800.0
+    assert girder_updates["GRD_offset1"] == 800.0
+    assert girder_updates["GRD_offset2"] == 550.0
