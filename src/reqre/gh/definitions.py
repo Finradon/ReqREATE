@@ -116,6 +116,57 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
             interface_outputs=("ABT_interface1", "ABT_interface2", "ABT_interface3"),
         )
     )
+    registry.register(
+        GhDefinition(
+            name="AbutmentSideD2",
+            gh_file="gh_samples/abutment_side_d2.gh",
+            inputs=(
+                GhInput("ABT_SD_height"),
+                GhInput("ABT_SD_thickness"),
+                GhInput("ABT_SD_length"),
+                GhInput("ABT_SD_angle"),
+                GhInput("ABT_DF_middleheight"),
+            ),
+            brep_output="ABT_SD_brep",
+            interface_outputs=("ABT_SD_interface1", "ABT_SD_interface2"),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="AbutmentMiddleD2",
+            gh_file="gh_samples/abutment_middle_d2.gh",
+            inputs=(
+                GhInput("ABT_MD_length"),
+                GhInput("ABT_MD_thickness"),
+                GhInput("ABT_MD_height"),
+            ),
+            brep_output="ABT_MD_brep",
+            interface_outputs=(
+                "ABT_SD_interface1",
+                "ABT_SD_interface2",
+                "ABT_SD_interface3",
+                "ABT_SD_interface4",
+            ),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="TGirderD2",
+            gh_file="gh_samples/t_girder_d2.gh",
+            inputs=(
+                GhInput("D2_GRD_width"),
+                GhInput("D2_GRD_length"),
+                GhInput("D2_GRD_thickness"),
+                GhInput("D2_GRD_t_offset"),
+                GhInput("D2_GRD_t_height"),
+                GhInput("D2_GRD_t_thickness"),
+                GhInput("D2_GRD_nr_t"),
+                GhInput("D2_GRD_iface_offset"),
+            ),
+            brep_output="D2_GRD_brep",
+            interface_outputs=("D2_GRD_interface1", "D2_GRD_interface2"),
+        )
+    )
     return registry
 
 

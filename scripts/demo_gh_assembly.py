@@ -14,12 +14,17 @@ from reqre.gh import (
     AssemblyConfig,
     assemble_from_graph,
     build_default_registry,
+    resolve_d1_parameters,
     util,
 )
 from reqre.neo4j import Neo4jClient
 
 CONFIG = {
     "detail_level": "D1",
+    "relationship_types": ("INTERFACES",),
+    "allowed_definitions": ("Abutment", "Girder"),
+    "run_d1_param_resolver": True,
+    "write_shared_parameter_nodes": True,
     "compute_url": DEFAULT_COMPUTE_URL,
     "gh_root": "gh_samples",
     "out_stl": "out/assembly.stl",
@@ -149,6 +154,8 @@ def main() -> None:
     registry = build_default_registry()
     config = AssemblyConfig(
         detail_level=CONFIG["detail_level"],
+        relationship_types=tuple(CONFIG["relationship_types"]),
+        allowed_definitions=tuple(CONFIG["allowed_definitions"]),
         compute_url=CONFIG["compute_url"],
         gh_root=Path(CONFIG["gh_root"]),
         start_element_id=CONFIG["start_id"],
@@ -158,6 +165,16 @@ def main() -> None:
     )
 
     with Neo4jClient() as client:
+        if CONFIG["detail_level"] == "D1" and CONFIG["run_d1_param_resolver"]:
+            resolved = resolve_d1_parameters(
+                client,
+                write_shared_parameter_nodes=bool(
+                    CONFIG["write_shared_parameter_nodes"]
+                ),
+            )
+            print(
+                f"Resolved D1 parameters for {len(resolved)} abutment/girder pair(s)."
+            )
         outcome = assemble_from_graph(client, registry, config=config)
 
     if outcome.missing_definitions:

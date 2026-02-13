@@ -150,6 +150,7 @@ def test_assemble_elements_uses_per_edge_interface_mapping(monkeypatch) -> None:
             detail_level="D1",
             gh_root=Path("gh_samples"),
             start_element_name="AbutmentElement1",
+            flip_normals=False,
         ),
     )
 

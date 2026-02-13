@@ -1,4 +1,4 @@
-# ReqRE - Requirements Rewriting Engine
+# ReqREATE - Requirements Rewriting and Transformation Engine
 A driver for graph rewriting in a [Neo4j](https://neo4j.com/) database based on [SysML](https://www.omg.org/spec/SysML/) requirements.
 
 ## Purpose

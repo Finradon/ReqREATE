@@ -65,6 +65,28 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "GRD_offset1": 500.0,
             "GRD_offset2": 500.0,
         },
+        "AbutmentSideD2": {
+            "ABT_SD_height": 5000.0,
+            "ABT_SD_thickness": 1000.0,
+            "ABT_SD_length": 2500.0,
+            "ABT_SD_angle": 20.0,
+            "ABT_DF_middleheight": 3000.0,
+        },
+        "AbutmentMiddleD2": {
+            "ABT_MD_length": 5000.0,
+            "ABT_MD_thickness": 1000.0,
+            "ABT_MD_height": 3000.0,
+        },
+        "TGirderD2": {
+            "D2_GRD_width": 5000.0,
+            "D2_GRD_length": 20000.0,
+            "D2_GRD_thickness": 500.0,
+            "D2_GRD_t_offset": 1000.0,
+            "D2_GRD_t_height": 1000.0,
+            "D2_GRD_t_thickness": 400.0,
+            "D2_GRD_nr_t": 3,
+            "D2_GRD_iface_offset": 0.0,
+        },
     }
 
 
@@ -258,8 +280,8 @@ def assemble_elements(
             )
 
         # if config.flip_normals:
-        #     target_plane = _flip_plane(target_plane)
-        #     source_plane = _flip_plane(source_plane)
+        # target_plane = _flip_plane(target_plane)
+        # source_plane = _flip_plane(source_plane)
 
         util.align_component(neighbor_comp, source_plane, target_plane)
 

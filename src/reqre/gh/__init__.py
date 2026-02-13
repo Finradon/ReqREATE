@@ -29,6 +29,7 @@ from .graph import (
     load_requirements_from_graph,
     resolve_requirements,
 )
+from .param_resolver import D1ResolvedPair, resolve_d1_parameters
 from .registry import (
     GhDefinition,
     GhInput,
@@ -61,8 +62,10 @@ __all__ = [
     "fetch_building_element_edges",
     "load_requirements_from_graph",
     "normalize_gh_path",
+    "D1ResolvedPair",
     "register_default_definitions",
     "register_directory_definitions",
+    "resolve_d1_parameters",
     "resolve_gh_path",
     "resolve_params",
     "resolve_requirements",

@@ -24,6 +24,8 @@ CONFIG = {
         "SubstructureDecomp.json",
         "ReqD2-1.json",
         "ReqD2-1-1.json",
+        "SubstructureDecomp2.json",
+        "SubstructureDecomp3.json",
     ],
 }
 
