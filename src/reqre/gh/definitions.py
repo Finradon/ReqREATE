@@ -125,10 +125,14 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
                 GhInput("ABT_SD_thickness"),
                 GhInput("ABT_SD_length"),
                 GhInput("ABT_SD_angle"),
-                GhInput("ABT_DF_middleheight"),
+                GhInput("ABT_SD_middleheight"),
             ),
             brep_output="ABT_SD_brep",
-            interface_outputs=("ABT_SD_interface1", "ABT_SD_interface2"),
+            interface_outputs=(
+                "ABT_SD_interface1",
+                "ABT_SD_interface2",
+                "ABT_SD_interface3",
+            ),
         )
     )
     registry.register(
@@ -165,6 +169,72 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
             ),
             brep_output="D2_GRD_brep",
             interface_outputs=("D2_GRD_interface1", "D2_GRD_interface2"),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="TGirderModule3",
+            gh_file="gh_samples/t_girder_module_d3.gh",
+            inputs=(
+                GhInput("D2_GRD_width"),
+                GhInput("D2_GRD_length"),
+                GhInput("D2_GRD_thickness"),
+                GhInput("D2_GRD_t_offset"),
+                GhInput("D2_GRD_t_height"),
+                GhInput("D2_GRD_t_thickness"),
+                GhInput("D2_GRD_nr_t"),
+                GhInput("D2_GRD_iface_offset"),
+            ),
+            brep_output="D2_GRD_brep",
+            interface_outputs=(
+                "D2_GRD_interface1",
+                "D2_GRD_interface2",
+                "D2_GRD_interface3",
+                "D2_GRD_interface4",
+            ),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="AbutmentTopD2",
+            gh_file="gh_samples/abutment_top_d2.gh",
+            inputs=(
+                GhInput("ABT_TOP_width"),
+                GhInput("ABT_TOP_length"),
+                GhInput("ABT_TOP_thickness"),
+                GhInput("ABT_TOP_offset"),
+            ),
+            brep_output="ABT_TOP_brep",
+            interface_outputs=(
+                "ABT_TOP_interface1",
+                "ABT_TOP_interface2",
+                "ABT_TOP_interface3",
+            ),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="KappeD3",
+            gh_file="gh_samples/kappe_d3.gh",
+            inputs=(GhInput("KP_length"),),
+            brep_output="KP_brep",
+            interface_outputs=(
+                "KP_interface1",
+                "KP_interface2",
+                "KP_interface3",
+            ),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="ExpansionD3",
+            gh_file="gh_samples/expansion_d3.gh",
+            inputs=(GhInput("EXP_length"),),
+            brep_output="EXP_brep",
+            interface_outputs=(
+                "EXP_interface1",
+                "EXP_interface2",
+            ),
         )
     )
     return registry

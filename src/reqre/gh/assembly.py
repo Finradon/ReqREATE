@@ -46,6 +46,7 @@ def _default_interface_priority() -> dict[str, tuple[int, ...]]:
     return {
         "Abutment": (0, 1, 2),
         "Girder": (0, 1),
+        "AbutmentTopD2": (0, 1, 2),
     }
 
 
@@ -66,15 +67,15 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "GRD_offset2": 500.0,
         },
         "AbutmentSideD2": {
-            "ABT_SD_height": 5000.0,
-            "ABT_SD_thickness": 1000.0,
+            "ABT_SD_height": 3500.0,
+            "ABT_SD_thickness": 500.0,
             "ABT_SD_length": 2500.0,
-            "ABT_SD_angle": 20.0,
-            "ABT_DF_middleheight": 3000.0,
+            "ABT_SD_angle": 30.0,
+            "ABT_SD_middleheight": 3000.0,
         },
         "AbutmentMiddleD2": {
             "ABT_MD_length": 5000.0,
-            "ABT_MD_thickness": 1000.0,
+            "ABT_MD_thickness": 500.0,
             "ABT_MD_height": 3000.0,
         },
         "TGirderD2": {
@@ -82,10 +83,32 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "D2_GRD_length": 20000.0,
             "D2_GRD_thickness": 500.0,
             "D2_GRD_t_offset": 1000.0,
-            "D2_GRD_t_height": 1000.0,
-            "D2_GRD_t_thickness": 400.0,
+            "D2_GRD_t_height": 500.0,
+            "D2_GRD_t_thickness": 500.0,
             "D2_GRD_nr_t": 3,
-            "D2_GRD_iface_offset": 0.0,
+            "D2_GRD_iface_offset": 250.0,
+        },
+        "TGirderModule3": {
+            "D2_GRD_width": 5000.0,
+            "D2_GRD_length": 20000.0,
+            "D2_GRD_thickness": 500.0,
+            "D2_GRD_t_offset": 1000.0,
+            "D2_GRD_t_height": 500.0,
+            "D2_GRD_t_thickness": 500.0,
+            "D2_GRD_nr_t": 3,
+            "D2_GRD_iface_offset": 250.0,
+        },
+        "AbutmentTopD2": {
+            "ABT_TOP_width": 5000.0,
+            "ABT_TOP_length": 4000.0,
+            "ABT_TOP_thickness": 500.0,
+            "ABT_TOP_offset": 250.0,
+        },
+        "KappeD3": {
+            "KP_length": 5000.0,
+        },
+        "ExpansionD3": {
+            "EXP_length": 1000.0,
         },
     }
 

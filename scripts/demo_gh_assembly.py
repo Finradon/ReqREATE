@@ -20,7 +20,7 @@ from reqre.gh import (
 from reqre.neo4j import Neo4jClient
 
 CONFIG = {
-    "detail_level": "D1",
+    "detail_level": "D2",
     "relationship_types": ("INTERFACES",),
     "allowed_definitions": ("Abutment", "Girder"),
     "run_d1_param_resolver": True,
@@ -36,7 +36,22 @@ CONFIG = {
     "start_id": None,  # example: "4:7f38d0f5-...:123"
     "allow_interface_reuse": False,
     "flip_normals": True,
+    "definition_colors": {
+        "Abutment": (210, 90, 90, 255),
+        "Girder": (90, 120, 210, 255),
+        "AbutmentSideD2": (210, 90, 90, 255),
+        "AbutmentMiddleD2": (210, 140, 80, 255),
+        "TGirderD2": (90, 120, 210, 255),
+    },
 }
+
+
+def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
+    if detail_level == "D2":
+        return ("AbutmentSideD2", "AbutmentMiddleD2", "AbutmentTopD2", "TGirderD2")
+    if detail_level == "D1":
+        return ("Abutment", "Girder")
+    return ()
 
 
 def _attrs(name: str, color: tuple[int, int, int, int]) -> r3d.ObjectAttributes:
@@ -116,10 +131,14 @@ def _write_3dm(
     interface_axis_length: float,
 ) -> None:
     model = r3d.File3dm()
+    color_map = CONFIG.get("definition_colors", {}) or {}
     for node_id, comp in sorted(components.items()):
         brep = comp.get("brep")
         if isinstance(brep, r3d.Brep):
-            model.Objects.AddBrep(brep, _attrs(f"BE_{node_id}", (220, 220, 220, 255)))
+            definition = comp.get("definition")
+            def_name = getattr(definition, "name", None)
+            color = color_map.get(def_name, (220, 220, 220, 255))
+            model.Objects.AddBrep(brep, _attrs(f"BE_{node_id}", color))
 
     if show_interface_axes:
         _add_interface_visuals(model, components, axis_length=interface_axis_length)
@@ -152,10 +171,11 @@ def _write_3dm(
 
 def main() -> None:
     registry = build_default_registry()
+    allowed_definitions = _allowed_definitions_for_detail(CONFIG["detail_level"])
     config = AssemblyConfig(
         detail_level=CONFIG["detail_level"],
         relationship_types=tuple(CONFIG["relationship_types"]),
-        allowed_definitions=tuple(CONFIG["allowed_definitions"]),
+        allowed_definitions=allowed_definitions,
         compute_url=CONFIG["compute_url"],
         gh_root=Path(CONFIG["gh_root"]),
         start_element_id=CONFIG["start_id"],
