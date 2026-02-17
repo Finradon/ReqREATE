@@ -30,19 +30,24 @@ CONFIG = {
     "out_stl": "out/assembly.stl",
     "out_3dm": "smb://nas.ads.mwn.de/ga27guz/TUM/assembly.3dm",
     "out_obj": "out/assembly.obj",
-    "show_interface_axes_3dm": True,
+    "show_interface_axes_3dm": False,
     "interface_axis_length": 400.0,
     "start_name": None,  # example: "AbutmentElement1"
     "start_id": None,  # example: "4:7f38d0f5-...:123"
     "allow_interface_reuse": False,
     "flip_normals": True,
     "definition_colors": {
-        "Abutment": (210, 90, 90, 255),
+        "Abutment": (120, 120, 120, 255),
         "Girder": (90, 120, 210, 255),
-        "AbutmentSideD2": (210, 90, 90, 255),
-        "AbutmentMiddleD2": (210, 140, 80, 255),
+        "AbutmentSideD2": (120, 120, 120, 255),
+        "AbutmentMiddleD2": (120, 120, 120, 255),
+        "AbutmentTopD2": (120, 120, 120, 255),
         "TGirderD2": (90, 120, 210, 255),
         "TGirderModule3": (90, 120, 210, 255),
+        "KappeD3": (170, 170, 170, 255),
+        "ExpansionD3": (110, 110, 110, 255),
+        "FahrbahnD3": (95, 95, 95, 255),
+        "FoundationD2": (145, 145, 145, 255),
     },
 }
 
@@ -54,6 +59,10 @@ def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
             "AbutmentMiddleD2",
             "AbutmentTopD2",
             "TGirderModule3",
+            "KappeD3",
+            "ExpansionD3",
+            "FahrbahnD3",
+            "FoundationD2",
         )
     if detail_level == "D1":
         return ("Abutment", "Girder")

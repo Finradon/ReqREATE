@@ -52,6 +52,7 @@ def _default_interface_priority() -> dict[str, tuple[int, ...]]:
 
 
 def _default_params() -> dict[str, dict[str, Any]]:
+    d3_module_length = 1000.0
     return {
         "Abutment": {
             "ABT_height": 5000.0,
@@ -91,7 +92,7 @@ def _default_params() -> dict[str, dict[str, Any]]:
         },
         "TGirderModule3": {
             "D3_GRD_width": 5000.0,
-            "D3_GRD_length": 1000.0,
+            "D3_GRD_length": d3_module_length,
             "D3_GRD_thickness": 500.0,
             "D3_GRD_t_offset": 1000.0,
             "D3_GRD_t_height": 500.0,
@@ -106,10 +107,20 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "ABT_TOP_offset": 250.0,
         },
         "KappeD3": {
-            "KP_length": 5000.0,
+            "KP_length": 4000.0,
         },
         "ExpansionD3": {
-            "EXP_length": 1000.0,
+            "EXP_length": 5000.0,
+        },
+        "FahrbahnD3": {
+            "FB_width": 3201.0,
+            "FB_length": 20000.0,
+        },
+        "FoundationD2": {
+            "FND_length": 3500.0,
+            "FND_width": 5750.0,
+            "FND_thickness": 500.0,
+            "FND_girth": 750.0,
         },
     }
 

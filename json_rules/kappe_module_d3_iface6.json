@@ -1,0 +1,99 @@
+{
+  "rule_id": "kappe_module_d3_iface6",
+  "name": "Attach KappeD3 to TGirderModule3 interface6",
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "girder_module",
+          "label": ["BuildingElement", "GirderElement"],
+          "props": {
+            "gh_file": "gh_samples/t_girder_module_d3.gh",
+            "detail_level": "D2"
+          }
+        },
+        {
+          "id": "existing_kappe",
+          "label": ["BuildingElement", "KappeElement"],
+          "props": {
+            "gh_file": "gh_samples/kappe_d3.gh",
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "girder_module",
+          "target": "existing_kappe",
+          "type": "INTERFACES",
+          "props": {
+            "src_interface": "D3_GRD_interface5",
+            "dst_interface": "KP_interface1"
+          }
+        }
+      ]
+    }
+  ],
+  "left": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "kappe_element",
+        "label": ["BuildingElement", "KappeElement"],
+        "props": {
+          "gh_file": "gh_samples/kappe_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "kappe_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "girder_module",
+        "target": "kappe_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface5",
+          "dst_interface": "KP_interface1"
+        }
+      }
+    ]
+  }
+}

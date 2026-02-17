@@ -42,7 +42,25 @@ CONFIG = {
         "SubstructureDecomp3.json",
         "girder_module_d3.json",
     ],
+    # Rule execution phases:
+    # 1) json_rules in listed order
+    # 2) module_decomp_rule repeated by length resolver
+    # 3) module_count_rules repeated for each D3 module
+    # 4) single_run_rules once each
+    # 5) fixed_run_rules exactly `times`
     "module_decomp_rule": "girder_module_decomp_d3.json",
+    "module_count_rules": [
+        "kappe_module_d3_iface5.json",
+        "kappe_module_d3_iface6.json",
+    ],
+    "single_run_rules": [
+        "expansion_module_d3_from_if2.json",
+        "fahrbahn_module_d3_from_if2.json",
+        "expansion_module_d3_from_if1.json",
+    ],
+    "fixed_run_rules": [
+        {"file": "foundation_module_d2.json", "times": 2},
+    ],
     "run_d2_module_length_resolver": True,
     "d2_length_param": "D2_GRD_length",
     "module_length": 1000.0,
@@ -53,23 +71,27 @@ CONFIG = {
     "write_shared_parameter_nodes": False,
     "compute_url": DEFAULT_COMPUTE_URL,
     "gh_root": "gh_samples",
-    "out_stl": "out/assembly.stl",
+    "out_stl": None,
     "out_3dm": "smb://nas.ads.mwn.de/ga27guz/TUM/assembly.3dm",
-    "out_obj": "out/assembly.obj",
-    "show_interface_axes_3dm": True,
+    "out_obj": None,
+    "show_interface_axes_3dm": False,
     "interface_axis_length": 400.0,
     "start_name": None,
     "start_id": None,
     "allow_interface_reuse": False,
     "flip_normals": True,
     "definition_colors": {
-        "Abutment": (80, 80, 80, 255),
+        "Abutment": (120, 120, 120, 255),
         "Girder": (180, 180, 180, 255),
-        "AbutmentSideD2": (80, 80, 80, 255),
-        "AbutmentMiddleD2": (80, 80, 80, 255),
-        "AbutmentTopD2": (80, 80, 80, 255),
+        "AbutmentSideD2": (120, 120, 120, 255),
+        "AbutmentMiddleD2": (120, 120, 120, 255),
+        "AbutmentTopD2": (120, 120, 120, 255),
         "TGirderD2": (180, 180, 180, 255),
         "TGirderModule3": (180, 180, 180, 255),
+        "KappeD3": (170, 170, 170, 255),
+        "ExpansionD3": (110, 110, 110, 255),
+        "FahrbahnD3": (95, 95, 95, 255),
+        "FoundationD2": (145, 145, 145, 255),
     },
 }
 
@@ -87,6 +109,10 @@ def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
             "AbutmentMiddleD2",
             "AbutmentTopD2",
             "TGirderModule3",
+            "KappeD3",
+            "ExpansionD3",
+            "FahrbahnD3",
+            "FoundationD2",
         )
     if detail_level == "D1":
         return ("Abutment", "Girder")
@@ -105,6 +131,7 @@ def _run_d2_module_length_resolver(
     module_decomp_path: Path,
     module_decomp_rule: DpoRule,
 ) -> None:
+    # Compute how many D3 modules should exist from current D2 girder length.
     plan = resolve_d2_module_plan(
         client,
         module_length=float(CONFIG["module_length"]),
@@ -127,6 +154,7 @@ def _run_d2_module_length_resolver(
         print("No additional module decomposition steps required.")
         return
 
+    # Apply decomposition one step at a time and assert +1 module per step.
     cypher = rule_to_cypher(module_decomp_rule)
     for step in range(plan.insertions_required):
         before = resolve_d2_module_plan(
@@ -159,6 +187,72 @@ def _run_d2_module_length_resolver(
     )
 
 
+def _count_d2_modules(client: Neo4jClient) -> int:
+    rows = client.execute(
+        """
+MATCH (m:BuildingElement:GirderElement)
+WHERE m.detail_level = 'D2'
+  AND m.gh_file = 'gh_samples/t_girder_module_d3.gh'
+RETURN count(DISTINCT m) AS module_count
+"""
+    )
+    if not rows:
+        return 0
+    raw = rows[0].get("module_count")
+    if isinstance(raw, (int, float)):
+        return int(raw)
+    return 0
+
+
+def _run_rules_per_module_count(
+    client: Neo4jClient,
+    *,
+    rule_paths: list[Path],
+    rules: list[DpoRule],
+) -> None:
+    # Run each rule once per currently present D3 module.
+    module_count = _count_d2_modules(client)
+    if module_count <= 0:
+        print("No D3 girder modules found; skipping per-module rules.")
+        return
+
+    for rule_path, rule in zip(rule_paths, rules):
+        cypher = rule_to_cypher(rule)
+        for _ in range(module_count):
+            client.execute(cypher.query, cypher.params)
+        print(f"Applied {rule_path.name} {module_count} time(s).")
+
+
+def _run_rules_once(
+    client: Neo4jClient,
+    *,
+    rule_paths: list[Path],
+    rules: list[DpoRule],
+) -> None:
+    # Run each rule exactly once, in list order.
+    for rule_path, rule in zip(rule_paths, rules):
+        _apply_rule(client, rule_path, rule)
+
+
+def _run_rules_fixed_count(
+    client: Neo4jClient,
+    *,
+    rule_paths: list[Path],
+    rules: list[DpoRule],
+    counts: list[int],
+) -> None:
+    # Run each rule with an explicit count from CONFIG.
+    for rule_path, rule, count in zip(rule_paths, rules, counts):
+        run_count = max(0, int(count))
+        if run_count == 0:
+            print(f"Skipped {rule_path.name} (0 time(s)).")
+            continue
+        cypher = rule_to_cypher(rule)
+        for _ in range(run_count):
+            client.execute(cypher.query, cypher.params)
+        print(f"Applied {rule_path.name} {run_count} time(s).")
+
+
 def _attrs(name: str, color: tuple[int, int, int, int]) -> r3d.ObjectAttributes:
     attrs = r3d.ObjectAttributes()
     attrs.Name = name
@@ -185,6 +279,7 @@ def _add_interface_visuals(
     *,
     axis_length: float,
 ) -> None:
+    # Optional debug visualization of interface planes in the 3DM output.
     if axis_length <= 0:
         return
 
@@ -235,6 +330,7 @@ def _write_3dm(
     show_interface_axes: bool,
     interface_axis_length: float,
 ) -> None:
+    # Serialize assembled Breps to 3DM, with optional SMB copy via gio.
     model = r3d.File3dm()
     color_map = CONFIG.get("definition_colors", {}) or {}
     for node_id, comp in sorted(components.items()):
@@ -281,7 +377,15 @@ def main() -> None:
     gaphor_paths = [gaphor_root / name for name in CONFIG["gaphor_files"]]
     rule_paths = [rules_root / name for name in CONFIG["json_rules"]]
     module_decomp_path = rules_root / str(CONFIG["module_decomp_rule"])
+    module_count_rule_paths = [
+        rules_root / name for name in CONFIG["module_count_rules"]
+    ]
+    single_run_rule_paths = [rules_root / name for name in CONFIG["single_run_rules"]]
+    fixed_run_specs = list(CONFIG.get("fixed_run_rules", []))
+    fixed_run_rule_paths = [rules_root / str(spec["file"]) for spec in fixed_run_specs]
+    fixed_run_rule_counts = [int(spec["times"]) for spec in fixed_run_specs]
 
+    # Load requirements + requirement relationships from all input Gaphor files.
     requirements: list[object] = []
     relationships: list[object] = []
     for gaphor_path in gaphor_paths:
@@ -292,8 +396,12 @@ def main() -> None:
         print("No requirements found in:", ", ".join(p.name for p in gaphor_paths))
         return
 
+    # Load all rule groups up front so validation errors fail fast.
     rules = [_load_rule(path) for path in rule_paths]
     module_decomp_rule = _load_rule(module_decomp_path)
+    module_count_rules = [_load_rule(path) for path in module_count_rule_paths]
+    single_run_rules = [_load_rule(path) for path in single_run_rule_paths]
+    fixed_run_rules = [_load_rule(path) for path in fixed_run_rule_paths]
 
     registry = build_default_registry()
     allowed_definitions = _allowed_definitions_for_detail(CONFIG["detail_level"])
@@ -310,6 +418,7 @@ def main() -> None:
     )
 
     with Neo4jClient() as client:
+        # Reset demo DB state, then import requirements graph.
         client.execute("MATCH (n) DETACH DELETE n")
         total = push_requirements_to_neo4j(client, requirements)
         rel_total = push_requirement_relationships_to_neo4j(client, relationships)
@@ -319,6 +428,7 @@ def main() -> None:
             f"from {len(gaphor_paths)} Gaphor file(s)."
         )
 
+        # Base decomposition / enrichment rules in configured order.
         for rule_path, rule in zip(rule_paths, rules):
             _apply_rule(client, rule_path, rule)
 
@@ -334,12 +444,30 @@ def main() -> None:
             )
 
         if CONFIG["detail_level"] == "D2" and CONFIG["run_d2_module_length_resolver"]:
+            # D2 modular flow: grow module chain, then add module-dependent parts.
             _run_d2_module_length_resolver(
                 client,
                 module_decomp_path=module_decomp_path,
                 module_decomp_rule=module_decomp_rule,
             )
+            _run_rules_per_module_count(
+                client,
+                rule_paths=module_count_rule_paths,
+                rules=module_count_rules,
+            )
+            _run_rules_once(
+                client,
+                rule_paths=single_run_rule_paths,
+                rules=single_run_rules,
+            )
+            _run_rules_fixed_count(
+                client,
+                rule_paths=fixed_run_rule_paths,
+                rules=fixed_run_rules,
+                counts=fixed_run_rule_counts,
+            )
 
+        # Build geometry from the resulting BuildingElement graph.
         outcome = assemble_from_graph(client, registry, config=config)
 
     if outcome.missing_definitions:
@@ -355,9 +483,10 @@ def main() -> None:
         print("No components assembled.")
         return
 
-    out_stl = Path(CONFIG["out_stl"])
-    util.write_stl(str(out_stl), outcome.breps())
-    print(f"Wrote STL to {out_stl}")
+    if CONFIG["out_stl"]:
+        out_stl = Path(str(CONFIG["out_stl"]))
+        util.write_stl(str(out_stl), outcome.breps())
+        print(f"Wrote STL to {out_stl}")
 
     if CONFIG["out_3dm"]:
         out_3dm = str(CONFIG["out_3dm"])
@@ -370,12 +499,16 @@ def main() -> None:
         print(f"Wrote 3DM to {out_3dm}")
 
     if CONFIG["out_obj"]:
-        out_obj = Path(CONFIG["out_obj"])
+        out_obj = Path(str(CONFIG["out_obj"]))
         util.write_obj(str(out_obj), outcome.breps())
         print(f"Wrote OBJ to {out_obj}")
 
     if outcome.order:
-        ordered = [str(node_id) for node_id in outcome.order]
+        ordered: list[str] = []
+        for node_id in outcome.order:
+            element = outcome.elements.get(node_id)
+            element_name = (element.name or "").strip() if element is not None else ""
+            ordered.append(element_name or str(node_id))
         print("Assembly order:", ", ".join(ordered))
 
 

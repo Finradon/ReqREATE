@@ -146,10 +146,10 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
             ),
             brep_output="ABT_MD_brep",
             interface_outputs=(
-                "ABT_SD_interface1",
-                "ABT_SD_interface2",
-                "ABT_SD_interface3",
-                "ABT_SD_interface4",
+                "ABT_MD_interface1",
+                "ABT_MD_interface2",
+                "ABT_MD_interface3",
+                "ABT_MD_interface4",
             ),
         )
     )
@@ -191,6 +191,9 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
                 "D3_GRD_interface2",
                 "D3_GRD_interface3",
                 "D3_GRD_interface4",
+                "D3_GRD_interface5",
+                "D3_GRD_interface6",
+                "D3_GRD_interface7",
             ),
         )
     )
@@ -235,6 +238,32 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
                 "EXP_interface1",
                 "EXP_interface2",
             ),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="FahrbahnD3",
+            gh_file="gh_samples/fahrbahn_d3.gh",
+            inputs=(
+                GhInput("FB_width"),
+                GhInput("FB_length"),
+            ),
+            brep_output="FB_brep",
+            interface_outputs=("FB_interface1",),
+        )
+    )
+    registry.register(
+        GhDefinition(
+            name="FoundationD2",
+            gh_file="gh_samples/foundation_d2.gh",
+            inputs=(
+                GhInput("FND_length"),
+                GhInput("FND_width"),
+                GhInput("FND_thickness"),
+                GhInput("FND_girth"),
+            ),
+            brep_output="FND_brep",
+            interface_outputs=("FND_interface1",),
         )
     )
     return registry
