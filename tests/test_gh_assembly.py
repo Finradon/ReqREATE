@@ -168,3 +168,20 @@ def test_assemble_elements_uses_per_edge_interface_mapping(monkeypatch) -> None:
             "GirderElement-GRD_interface2",
         ),
     ]
+
+
+def test_resolve_interface_index_prefers_trailing_digits() -> None:
+    definition = GhDefinition(
+        name="TGirderModule3",
+        gh_file="gh_samples/t_girder_module_d3.gh",
+        interface_outputs=(
+            "D2_GRD_interface1",
+            "D2_GRD_interface2",
+            "D2_GRD_interface3",
+            "D2_GRD_interface4",
+        ),
+    )
+
+    resolved = assembly._resolve_interface_index(definition, "D3_GRD_interface2")
+
+    assert resolved == 1

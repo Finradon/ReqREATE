@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from reqre.gh.param_resolver import _resolve_d1_pair_values, resolve_d1_parameters
+from reqre.gh.param_resolver import (
+    _resolve_d1_pair_values,
+    resolve_d1_parameters,
+    resolve_d2_module_plan,
+)
 
 
 class _FakeClient:
@@ -14,6 +18,21 @@ class _FakeClient:
         self.calls.append((query, params))
         if "RETURN DISTINCT" in query:
             return list(self._rows)
+        return []
+
+
+class _FakeD2Client:
+    def __init__(self, girder_props: dict, module_count: int):
+        self._girder_props = girder_props
+        self._module_count = module_count
+        self.calls: list[tuple[str, dict | None]] = []
+
+    def execute(self, query: str, params=None):
+        self.calls.append((query, params))
+        if "gh_samples/t_girder_d2.gh" in query:
+            return [{"girder_id": "g_d2_1", "girder_props": dict(self._girder_props)}]
+        if "module_count" in query:
+            return [{"module_count": self._module_count}]
         return []
 
 
@@ -188,3 +207,35 @@ def test_resolve_d1_pair_values_prefers_bound_parameter_values() -> None:
     assert girder_updates["GRD_height"] == 800.0
     assert girder_updates["GRD_offset1"] == 800.0
     assert girder_updates["GRD_offset2"] == 550.0
+
+
+def test_resolve_d2_module_plan_counts_missing_modules_from_length() -> None:
+    client = _FakeD2Client(
+        girder_props={"param_D2_GRD_length": 10000.0},
+        module_count=1,
+    )
+
+    plan = resolve_d2_module_plan(client, module_length=1000.0)
+
+    assert plan.girder_id == "g_d2_1"
+    assert plan.girder_length == 10000.0
+    assert plan.target_modules == 10
+    assert plan.current_modules == 1
+    assert plan.insertions_required == 9
+
+
+def test_resolve_d2_module_plan_falls_back_to_default_d2_length() -> None:
+    client = _FakeD2Client(girder_props={}, module_count=1)
+
+    plan = resolve_d2_module_plan(client, module_length=1000.0)
+
+    assert plan.girder_length == 20000.0
+    assert plan.target_modules == 20
+    assert plan.insertions_required == 19
+
+
+def test_resolve_d2_module_plan_rejects_non_positive_module_length() -> None:
+    client = _FakeD2Client(girder_props={}, module_count=0)
+
+    with pytest.raises(ValueError, match="positive"):
+        resolve_d2_module_plan(client, module_length=0)

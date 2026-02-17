@@ -23,6 +23,7 @@ from reqre.gh import (
     assemble_from_graph,
     build_default_registry,
     resolve_d1_parameters,
+    resolve_d2_module_plan,
     util,
 )
 from reqre.neo4j import Neo4jClient
@@ -34,12 +35,17 @@ CONFIG = {
     ],
     "json_rules": [
         "ReqD1-1.json",
-        "SubstructureDecomp.json",
+        "SubstructureDecompD1.json",
         "ReqD2-1.json",
         "ReqD2-1-1.json",
         "SubstructureDecomp2.json",
         "SubstructureDecomp3.json",
+        "girder_module_d3.json",
     ],
+    "module_decomp_rule": "girder_module_decomp_d3.json",
+    "run_d2_module_length_resolver": True,
+    "d2_length_param": "D2_GRD_length",
+    "module_length": 1000.0,
     "detail_level": "D2",
     "relationship_types": ("INTERFACES",),
     "allowed_definitions": ("Abutment", "Girder"),
@@ -63,6 +69,7 @@ CONFIG = {
         "AbutmentMiddleD2": (80, 80, 80, 255),
         "AbutmentTopD2": (80, 80, 80, 255),
         "TGirderD2": (180, 180, 180, 255),
+        "TGirderModule3": (180, 180, 180, 255),
     },
 }
 
@@ -75,10 +82,81 @@ def _load_rule(path: Path) -> DpoRule:
 
 def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
     if detail_level == "D2":
-        return ("AbutmentSideD2", "AbutmentMiddleD2", "AbutmentTopD2", "TGirderD2")
+        return (
+            "AbutmentSideD2",
+            "AbutmentMiddleD2",
+            "AbutmentTopD2",
+            "TGirderModule3",
+        )
     if detail_level == "D1":
         return ("Abutment", "Girder")
     return ()
+
+
+def _apply_rule(client: Neo4jClient, rule_path: Path, rule: DpoRule) -> None:
+    cypher = rule_to_cypher(rule)
+    client.execute(cypher.query, cypher.params)
+    print(f"Applied {rule_path.name}.")
+
+
+def _run_d2_module_length_resolver(
+    client: Neo4jClient,
+    *,
+    module_decomp_path: Path,
+    module_decomp_rule: DpoRule,
+) -> None:
+    plan = resolve_d2_module_plan(
+        client,
+        module_length=float(CONFIG["module_length"]),
+        length_param=str(CONFIG["d2_length_param"]),
+    )
+    print(
+        "D2 girder length "
+        f"{plan.girder_length:.3f} mm -> "
+        f"{plan.target_modules} module(s) at {plan.module_length:.3f} mm each. "
+        f"Current modules: {plan.current_modules}."
+    )
+
+    if plan.current_modules == 0 and plan.target_modules > 0:
+        raise RuntimeError(
+            "No D3 modules found for the D2 girder. "
+            "Apply girder_module_d3.json before module decomposition."
+        )
+
+    if plan.insertions_required <= 0:
+        print("No additional module decomposition steps required.")
+        return
+
+    cypher = rule_to_cypher(module_decomp_rule)
+    for step in range(plan.insertions_required):
+        before = resolve_d2_module_plan(
+            client,
+            module_length=float(CONFIG["module_length"]),
+            length_param=str(CONFIG["d2_length_param"]),
+        )
+        client.execute(cypher.query, cypher.params)
+        after = resolve_d2_module_plan(
+            client,
+            module_length=float(CONFIG["module_length"]),
+            length_param=str(CONFIG["d2_length_param"]),
+        )
+        if after.current_modules != before.current_modules + 1:
+            raise RuntimeError(
+                "Module decomposition did not add exactly one module "
+                f"at step {step + 1}: "
+                f"before={before.current_modules}, after={after.current_modules}."
+            )
+
+    final_plan = resolve_d2_module_plan(
+        client,
+        module_length=float(CONFIG["module_length"]),
+        length_param=str(CONFIG["d2_length_param"]),
+    )
+    print(
+        f"Applied {module_decomp_path.name} "
+        f"{plan.insertions_required} time(s). "
+        f"Final modules: {final_plan.current_modules}."
+    )
 
 
 def _attrs(name: str, color: tuple[int, int, int, int]) -> r3d.ObjectAttributes:
@@ -202,6 +280,7 @@ def main() -> None:
 
     gaphor_paths = [gaphor_root / name for name in CONFIG["gaphor_files"]]
     rule_paths = [rules_root / name for name in CONFIG["json_rules"]]
+    module_decomp_path = rules_root / str(CONFIG["module_decomp_rule"])
 
     requirements: list[object] = []
     relationships: list[object] = []
@@ -214,6 +293,7 @@ def main() -> None:
         return
 
     rules = [_load_rule(path) for path in rule_paths]
+    module_decomp_rule = _load_rule(module_decomp_path)
 
     registry = build_default_registry()
     allowed_definitions = _allowed_definitions_for_detail(CONFIG["detail_level"])
@@ -240,9 +320,7 @@ def main() -> None:
         )
 
         for rule_path, rule in zip(rule_paths, rules):
-            cypher = rule_to_cypher(rule)
-            client.execute(cypher.query, cypher.params)
-            print(f"Applied {rule_path.name}.")
+            _apply_rule(client, rule_path, rule)
 
         if CONFIG["detail_level"] == "D1" and CONFIG["run_d1_param_resolver"]:
             resolved = resolve_d1_parameters(
@@ -253,6 +331,13 @@ def main() -> None:
             )
             print(
                 f"Resolved D1 parameters for {len(resolved)} abutment/girder pair(s)."
+            )
+
+        if CONFIG["detail_level"] == "D2" and CONFIG["run_d2_module_length_resolver"]:
+            _run_d2_module_length_resolver(
+                client,
+                module_decomp_path=module_decomp_path,
+                module_decomp_rule=module_decomp_rule,
             )
 
         outcome = assemble_from_graph(client, registry, config=config)

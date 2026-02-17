@@ -126,6 +126,41 @@ def resolve_gh_path(gh_file: str, gh_root: Path | None) -> str:
     return str(Path(gh_root) / relative)
 
 
+def _alternate_output_names(name: str) -> tuple[str, ...]:
+    candidates: list[str] = []
+    if "D3_" in name:
+        candidates.append(name.replace("D3_", "D2_"))
+    if "D2_" in name:
+        candidates.append(name.replace("D2_", "D3_"))
+    # Also support lowercase variants in case outputs were renamed manually.
+    if "d3_" in name:
+        candidates.append(name.replace("d3_", "d2_"))
+    if "d2_" in name:
+        candidates.append(name.replace("d2_", "d3_"))
+    deduped: list[str] = []
+    for candidate in candidates:
+        if candidate != name and candidate not in deduped:
+            deduped.append(candidate)
+    return tuple(deduped)
+
+
+def _first_brep_from_any_output(values: list[dict[str, Any]], util) -> Any | None:
+    for entry in values:
+        param_name = entry.get("ParamName")
+        if not isinstance(param_name, str):
+            continue
+        if "brep" not in param_name.lower():
+            continue
+        inner_tree = entry.get("InnerTree")
+        if not isinstance(inner_tree, dict):
+            continue
+        decoded = util.decode_inner_tree(inner_tree)
+        for obj in decoded:
+            if obj.__class__.__name__.lower() == "brep":
+                return obj
+    return None
+
+
 def evaluate_definition(
     definition: GhDefinition,
     params: dict[str, Any],
@@ -134,6 +169,14 @@ def evaluate_definition(
 ) -> GhEvaluationResult:
     config = config or GhEvaluationConfig()
     resolved_params = resolve_params(definition, params)
+    expanded_params = dict(resolved_params)
+    # Send alias trees too; GH files can still use legacy D2-style parameter names.
+    for spec in definition.inputs:
+        if spec.name not in resolved_params:
+            continue
+        value = resolved_params[spec.name]
+        for alias in spec.aliases:
+            expanded_params.setdefault(alias, value)
 
     _check_compute_health(config.compute_url)
 
@@ -141,7 +184,7 @@ def evaluate_definition(
     compute_util.url = config.compute_url
 
     trees = []
-    for name, value in resolved_params.items():
+    for name, value in expanded_params.items():
         tree = gh.DataTree(name)
         tree.Append([0], _coerce_tree_values(value))
         trees.append(tree)
@@ -155,13 +198,27 @@ def evaluate_definition(
     values = out.get("values", [])
     if definition.brep_output:
         breps = util.get_output_by_name(values, definition.brep_output)
+        if not breps:
+            for alt_name in _alternate_output_names(definition.brep_output):
+                breps = util.get_output_by_name(values, alt_name)
+                if breps:
+                    break
         result.outputs[definition.brep_output] = breps
         result.brep = breps[0] if breps else None
+        if result.brep is None:
+            result.brep = _first_brep_from_any_output(values, util)
 
     if definition.interface_outputs:
-        result.iface_list = [
-            util.extract_plane(values, name) for name in definition.interface_outputs
-        ]
+        iface_list: list[Any] = []
+        for name in definition.interface_outputs:
+            plane = util.extract_plane(values, name)
+            if plane is None:
+                for alt_name in _alternate_output_names(name):
+                    plane = util.extract_plane(values, alt_name)
+                    if plane is not None:
+                        break
+            iface_list.append(plane)
+        result.iface_list = iface_list
 
     for name in definition.extra_outputs:
         result.outputs[name] = util.get_output_by_name(values, name)

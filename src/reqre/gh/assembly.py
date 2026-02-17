@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -89,14 +90,14 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "D2_GRD_iface_offset": 250.0,
         },
         "TGirderModule3": {
-            "D2_GRD_width": 5000.0,
-            "D2_GRD_length": 20000.0,
-            "D2_GRD_thickness": 500.0,
-            "D2_GRD_t_offset": 1000.0,
-            "D2_GRD_t_height": 500.0,
-            "D2_GRD_t_thickness": 500.0,
-            "D2_GRD_nr_t": 3,
-            "D2_GRD_iface_offset": 250.0,
+            "D3_GRD_width": 5000.0,
+            "D3_GRD_length": 1000.0,
+            "D3_GRD_thickness": 500.0,
+            "D3_GRD_t_offset": 1000.0,
+            "D3_GRD_t_height": 500.0,
+            "D3_GRD_t_thickness": 500.0,
+            "D3_GRD_nr_t": 3,
+            "D3_GRD_iface_offset": 250.0,
         },
         "AbutmentTopD2": {
             "ABT_TOP_width": 5000.0,
@@ -581,6 +582,13 @@ def _resolve_interface_index(definition: GhDefinition, hint: Any) -> int | None:
         for idx, name in enumerate(definition.interface_outputs):
             if name.lower() == lowered:
                 return idx
+        trailing_digits = re.search(r"(\d+)$", lowered)
+        if trailing_digits:
+            return _coerce_interface_index(
+                int(trailing_digits.group(1)),
+                len(definition.interface_outputs),
+                prefer_one_based=True,
+            )
         digits = "".join(ch for ch in lowered if ch.isdigit())
         if digits:
             return _coerce_interface_index(

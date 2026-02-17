@@ -1,0 +1,142 @@
+{
+  "rule_id": "girder_module_d3",
+  "name": "Replace D2 monolithic girder interfaces with initial D3 module",
+  "left": {
+    "nodes": [
+      {
+        "id": "girder_element_d2",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_1",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_2",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_middle_wall_1",
+        "target": "girder_element_d2",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D2_GRD_interface1"
+        }
+      },
+      {
+        "source": "abutment_middle_wall_2",
+        "target": "girder_element_d2",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D2_GRD_interface2"
+        }
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "girder_element_d2",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_1",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_2",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "girder_element_d2",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_1",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_2",
+        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "girder_module_d3",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "girder_module_d3",
+        "target": "girder_element_d2",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_middle_wall_1",
+        "target": "girder_module_d3",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface1"
+        }
+      },
+      {
+        "source": "abutment_middle_wall_2",
+        "target": "girder_module_d3",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface2"
+        }
+      }
+    ]
+  }
+}

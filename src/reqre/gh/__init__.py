@@ -29,7 +29,12 @@ from .graph import (
     load_requirements_from_graph,
     resolve_requirements,
 )
-from .param_resolver import D1ResolvedPair, resolve_d1_parameters
+from .param_resolver import (
+    D1ResolvedPair,
+    D2ModulePlan,
+    resolve_d1_parameters,
+    resolve_d2_module_plan,
+)
 from .registry import (
     GhDefinition,
     GhInput,
@@ -63,9 +68,11 @@ __all__ = [
     "load_requirements_from_graph",
     "normalize_gh_path",
     "D1ResolvedPair",
+    "D2ModulePlan",
     "register_default_definitions",
     "register_directory_definitions",
     "resolve_d1_parameters",
+    "resolve_d2_module_plan",
     "resolve_gh_path",
     "resolve_params",
     "resolve_requirements",

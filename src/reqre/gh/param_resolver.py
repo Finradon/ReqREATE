@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -87,6 +88,25 @@ SET a += $abutment_param_props
 SET g += $girder_param_props
 """
 
+_D2_GIRDER_QUERY = """
+MATCH (g:BuildingElement:GirderElement)
+WHERE g.detail_level = 'D2'
+  AND g.gh_file = 'gh_samples/t_girder_d2.gh'
+RETURN
+  elementId(g) AS girder_id,
+  properties(g) AS girder_props
+ORDER BY girder_id
+"""
+
+_D2_MODULE_COUNT_QUERY = """
+MATCH (g:BuildingElement:GirderElement)
+WHERE elementId(g) = $girder_id
+OPTIONAL MATCH (m:BuildingElement:GirderElement)-[:DECOMPOSES]->(g)
+WHERE m.detail_level = 'D2'
+  AND m.gh_file = 'gh_samples/t_girder_module_d3.gh'
+RETURN count(DISTINCT m) AS module_count
+"""
+
 
 @dataclass(frozen=True)
 class D1ResolvedPair:
@@ -108,6 +128,16 @@ class D1ResolvedPair:
     @property
     def offset(self) -> float:
         return self.abutment_updates["ABT_offset"]
+
+
+@dataclass(frozen=True)
+class D2ModulePlan:
+    girder_id: str
+    girder_length: float
+    module_length: float
+    target_modules: int
+    current_modules: int
+    insertions_required: int
 
 
 def _coerce_param_map(raw: Any) -> dict[str, Any]:
@@ -373,3 +403,67 @@ def resolve_d1_parameters(
         )
 
     return resolved
+
+
+def resolve_d2_module_plan(
+    client: Neo4jClient,
+    *,
+    module_length: float,
+    length_param: str = "D2_GRD_length",
+) -> D2ModulePlan:
+    """Resolve how many module-insertion rewrites are needed for a D2 girder."""
+    module_length_value = _as_float(module_length)
+    if module_length_value is None or module_length_value <= 0:
+        raise ValueError("module_length must be a positive number")
+
+    rows = client.execute(_D2_GIRDER_QUERY)
+    if not rows:
+        raise RuntimeError("No D2 t_girder_d2 BuildingElement found in graph.")
+    if len(rows) != 1:
+        raise RuntimeError(
+            "Expected exactly one D2 t_girder_d2 BuildingElement, "
+            f"found {len(rows)}."
+        )
+
+    row = rows[0]
+    girder_id = row.get("girder_id")
+    if not isinstance(girder_id, str) or not girder_id:
+        raise RuntimeError("Could not resolve D2 girder id for module planning.")
+
+    girder_props = row.get("girder_props") or {}
+    if not isinstance(girder_props, Mapping):
+        girder_props = {}
+
+    girder_params = _extract_param_map(girder_props)
+    d2_defaults = AssemblyConfig(detail_level="D2").default_params.get("TGirderD2", {})
+    default_length = _as_float(d2_defaults.get(length_param))
+
+    girder_length = _pick_float(
+        girder_params.get(length_param),
+        girder_props.get(length_param),
+        default_length,
+    )
+    if girder_length is None or girder_length <= 0:
+        raise RuntimeError(
+            "Could not resolve a positive D2 girder length for module planning "
+            f"(parameter '{length_param}')."
+        )
+
+    target_modules = max(1, math.ceil(girder_length / module_length_value))
+
+    count_rows = client.execute(_D2_MODULE_COUNT_QUERY, {"girder_id": girder_id})
+    current_modules = 0
+    if count_rows:
+        raw_count = count_rows[0].get("module_count")
+        if isinstance(raw_count, (int, float)):
+            current_modules = int(raw_count)
+
+    insertions_required = max(0, target_modules - current_modules)
+    return D2ModulePlan(
+        girder_id=girder_id,
+        girder_length=girder_length,
+        module_length=module_length_value,
+        target_modules=target_modules,
+        current_modules=current_modules,
+        insertions_required=insertions_required,
+    )

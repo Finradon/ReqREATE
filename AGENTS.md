@@ -62,3 +62,20 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 - Root selection order in GH assembly is: `start_element_id` override, then `start_element_name` override, then first `Abutment`, otherwise lexicographic fallback.
 - Placement strategy is frontier-based: each step picks one unplaced node adjacent to the placed set and aligns only the new component toward the already assembled component.
 - If an edge has no interface hints, assembly falls back to `AssemblyConfig.interface_priority` (and optional `interface_map` entries if provided).
+
+## D3 Girder Module Workflow Hints
+- Keep the modular girder flow at `detail_level: D2` for now, even though modules come from `t_girder_module_d3.gh`.
+- `json_rules/girder_module_d3.json` is the initial replacement rule:
+  - It preserves the canonical `t_girder_d2` node.
+  - It introduces one `t_girder_module_d3` node.
+  - It moves abutment-middle-wall interfaces from the monolithic D2 girder to the new module.
+- `json_rules/girder_module_decomp_d3.json` is repeatable and must add exactly one module per application:
+  - Growth is always from one fixed side (the selected tail side), not alternating sides.
+  - Module-to-module mapping is `D3_GRD_interface4 -> D3_GRD_interface3`.
+  - In the current rule version, the tail abutment-middle-wall/module connection uses `D3_GRD_interface1` on the module side.
+- Length preservation is driven by the D2 girder length:
+  - Read `D2_GRD_length` from the preserved `t_girder_d2` node.
+  - Use module standard length `1000`.
+  - Compute `target_modules = ceil(D2_GRD_length / 1000)`.
+  - Apply decomposition rule `target_modules - current_modules` times (typically `target_modules - 1` right after initial replacement).
+- When touching GH definitions for module parts, preserve D2/D3 parameter/output name compatibility (aliases/fallbacks) because some GH files may expose mixed naming.

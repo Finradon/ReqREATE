@@ -42,13 +42,19 @@ CONFIG = {
         "AbutmentSideD2": (210, 90, 90, 255),
         "AbutmentMiddleD2": (210, 140, 80, 255),
         "TGirderD2": (90, 120, 210, 255),
+        "TGirderModule3": (90, 120, 210, 255),
     },
 }
 
 
 def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
     if detail_level == "D2":
-        return ("AbutmentSideD2", "AbutmentMiddleD2", "AbutmentTopD2", "TGirderD2")
+        return (
+            "AbutmentSideD2",
+            "AbutmentMiddleD2",
+            "AbutmentTopD2",
+            "TGirderModule3",
+        )
     if detail_level == "D1":
         return ("Abutment", "Girder")
     return ()
