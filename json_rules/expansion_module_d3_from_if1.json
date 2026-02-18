@@ -6,7 +6,10 @@
       "nodes": [
         {
           "id": "girder_module",
-          "label": ["BuildingElement", "GirderElement"],
+          "label": [
+            "BuildingElement",
+            "GirderElement"
+          ],
           "props": {
             "gh_file": "gh_samples/t_girder_module_d3.gh",
             "detail_level": "D2"
@@ -14,7 +17,10 @@
         },
         {
           "id": "existing_expansion",
-          "label": ["BuildingElement", "ExpansionElement"],
+          "label": [
+            "BuildingElement",
+            "ExpansionElement"
+          ],
           "props": {
             "gh_file": "gh_samples/expansion_d3.gh",
             "detail_level": "D2"
@@ -37,8 +43,18 @@
   "left": {
     "nodes": [
       {
+        "id": "req_d2_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1"
+        }
+      },
+      {
         "id": "girder_module",
-        "label": ["BuildingElement", "GirderElement"],
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
         "props": {
           "gh_file": "gh_samples/t_girder_module_d3.gh",
           "detail_level": "D2"
@@ -46,7 +62,10 @@
       },
       {
         "id": "abutment_middle_wall",
-        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
         "props": {
           "gh_file": "gh_samples/abutment_middle_d2.gh",
           "detail_level": "D2"
@@ -68,8 +87,18 @@
   "interface": {
     "nodes": [
       {
+        "id": "req_d2_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1"
+        }
+      },
+      {
         "id": "girder_module",
-        "label": ["BuildingElement", "GirderElement"],
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
         "props": {
           "gh_file": "gh_samples/t_girder_module_d3.gh",
           "detail_level": "D2"
@@ -77,7 +106,10 @@
       },
       {
         "id": "abutment_middle_wall",
-        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
         "props": {
           "gh_file": "gh_samples/abutment_middle_d2.gh",
           "detail_level": "D2"
@@ -99,8 +131,18 @@
   "right": {
     "nodes": [
       {
+        "id": "req_d2_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1"
+        }
+      },
+      {
         "id": "girder_module",
-        "label": ["BuildingElement", "GirderElement"],
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
         "props": {
           "gh_file": "gh_samples/t_girder_module_d3.gh",
           "detail_level": "D2"
@@ -108,7 +150,10 @@
       },
       {
         "id": "abutment_middle_wall",
-        "label": ["BuildingElement", "AbutmentMiddleWallElement"],
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
         "props": {
           "gh_file": "gh_samples/abutment_middle_d2.gh",
           "detail_level": "D2"
@@ -116,7 +161,10 @@
       },
       {
         "id": "expansion_element",
-        "label": ["BuildingElement", "ExpansionElement"],
+        "label": [
+          "BuildingElement",
+          "ExpansionElement"
+        ],
         "props": {
           "gh_file": "gh_samples/expansion_d3.gh",
           "detail_level": "D2"
@@ -124,6 +172,11 @@
       }
     ],
     "edges": [
+      {
+        "source": "req_d2_1",
+        "target": "expansion_element",
+        "type": "SATISFIES"
+      },
       {
         "source": "abutment_middle_wall",
         "target": "girder_module",

@@ -107,6 +107,9 @@
 <ref refid="7f26cd31-029d-11f1-a796-03f8d9ae9d69"/>
 <ref refid="27bf2c8f-02a0-11f1-9629-03f8d9ae9d69"/>
 <ref refid="e6f573ea-02a0-11f1-a672-03f8d9ae9d69"/>
+<ref refid="b1d36465-0c94-11f1-9757-f5cbf6b4fed4"/>
+<ref refid="eb3f4b6d-0c94-11f1-b7d6-f5cbf6b4fed4"/>
+<ref refid="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4"/>
 </reflist>
 </ownedType>
 <owningPackage>
@@ -119,6 +122,9 @@
 <ref refid="7f26cd31-029d-11f1-a796-03f8d9ae9d69"/>
 <ref refid="27bf2c8f-02a0-11f1-9629-03f8d9ae9d69"/>
 <ref refid="e6f573ea-02a0-11f1-a672-03f8d9ae9d69"/>
+<ref refid="b1d36465-0c94-11f1-9757-f5cbf6b4fed4"/>
+<ref refid="eb3f4b6d-0c94-11f1-b7d6-f5cbf6b4fed4"/>
+<ref refid="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4"/>
 </reflist>
 </packagedElement>
 </UML:Package>
@@ -215,9 +221,15 @@
 <ref refid="7f2715cd-029d-11f1-b49e-03f8d9ae9d69"/>
 <ref refid="27bf7187-02a0-11f1-9a5a-03f8d9ae9d69"/>
 <ref refid="e6f5bd5f-02a0-11f1-a770-03f8d9ae9d69"/>
+<ref refid="b1d2776b-0c94-11f1-8fe3-f5cbf6b4fed4"/>
+<ref refid="eb3e0777-0c94-11f1-8bca-f5cbf6b4fed4"/>
+<ref refid="257281b1-0c95-11f1-9ecb-f5cbf6b4fed4"/>
 <ref refid="383bea2b-02a0-11f1-8efc-03f8d9ae9d69"/>
 <ref refid="3a16c9e3-02a0-11f1-b3fe-03f8d9ae9d69"/>
 <ref refid="18b62277-02a1-11f1-9319-03f8d9ae9d69"/>
+<ref refid="ac790e43-0c94-11f1-a81d-f5cbf6b4fed4"/>
+<ref refid="096588aa-0c95-11f1-a23e-f5cbf6b4fed4"/>
+<ref refid="33185b4f-0c96-11f1-870a-f5cbf6b4fed4"/>
 </reflist>
 </ownedPresentation>
 <presentation>
@@ -1271,7 +1283,7 @@
 </SysML:Requirement>
 <SysML:RequirementItem id="7f2715cd-029d-11f1-b49e-03f8d9ae9d69">
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 352.4353289169893, 431.23240926563636)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 683.16796875, 358.87435787100844)</val>
 </matrix>
 <top-left>
 <val>(0.0, 0.0)</val>
@@ -1318,7 +1330,7 @@
 </SysML:Requirement>
 <SysML:RequirementItem id="27bf7187-02a0-11f1-9a5a-03f8d9ae9d69">
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 457.0, 211.02928426563636)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 431.5577221074378, 131.1868508090893)</val>
 </matrix>
 <top-left>
 <val>(0.0, 0.0)</val>
@@ -1350,10 +1362,10 @@
 <ref refid="3870af25-02a0-11f1-b0e9-03f8d9ae9d69"/>
 </subject>
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 714.6953125, 47.51759603321449)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 630.3719653925618, 5.740116089064182)</val>
 </matrix>
 <points>
-<val>[(-31.52734375, 1.8632708188387994), (-158.41912499160776, 163.51168823242188)]</val>
+<val>[(52.79600335743817, 33.60815908768563), (-99.53805577673177, 33.608159087685635), (-99.53805577673177, 125.4467347200251)]</val>
 </points>
 <head-connection>
 <ref refid="6895f5ef-029c-11f1-8ad0-03f8d9ae9d69"/>
@@ -1389,10 +1401,10 @@
 <ref refid="3a300d16-02a0-11f1-b5f6-03f8d9ae9d69"/>
 </subject>
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 512.60546875, 268.05662801563636)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 557.5209123595687, 225.08530949966925)</val>
 </matrix>
 <points>
-<val>[(-1.924046083010694, 93.97265625), (-49.89424218522811, 163.17578125)]</val>
+<val>[(23.036809747869142, -13.074340321918754), (202.64705639043143, -13.074340321918783), (202.64705639043143, 133.7890483713392)]</val>
 </points>
 <head-connection>
 <ref refid="27bf7187-02a0-11f1-9a5a-03f8d9ae9d69"/>
@@ -1444,7 +1456,7 @@
 </SysML:Requirement>
 <SysML:RequirementItem id="e6f5bd5f-02a0-11f1-a770-03f8d9ae9d69">
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 946.9180908203125, 211.02928426563636)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 920.9915670599818, 131.18685080908932)</val>
 </matrix>
 <top-left>
 <val>(0.0, 0.0)</val>
@@ -1479,7 +1491,7 @@
 <val>(1.0, 0.0, 0.0, 1.0, 803.2734375, 36.24415853321449)</val>
 </matrix>
 <points>
-<val>[(33.89453125, 36.21699047851635), (166.4526532227643, 174.78512573242188)]</val>
+<val>[(33.89453125, 3.1041166435353063), (140.52612946243357, 3.1041166435353063), (140.52612946243357, 94.94269227587483)]</val>
 </points>
 <head-connection>
 <ref refid="6895f5ef-029c-11f1-8ad0-03f8d9ae9d69"/>
@@ -1499,6 +1511,273 @@
 </sourceContext>
 <targetContext>
 <ref refid="e6f573ea-02a0-11f1-a672-03f8d9ae9d69"/>
+</targetContext>
+</SysML:Refine>
+<SysML:RefineItem id="ac790e43-0c94-11f1-a81d-f5cbf6b4fed4">
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<horizontal>
+<val>False</val>
+</horizontal>
+<orthogonal>
+<val>False</val>
+</orthogonal>
+<subject>
+<ref refid="b1d44eea-0c94-11f1-be43-f5cbf6b4fed4"/>
+</subject>
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 1169.4454650878906, -10.143912323250163)</val>
+</matrix>
+<points>
+<val>[(-332.2774963378906, 49.28832568977464), (96.0133311374127, 49.4921875), (96.0133311374127, 141.33076313233948)]</val>
+</points>
+<head-connection>
+<ref refid="6895f5ef-029c-11f1-8ad0-03f8d9ae9d69"/>
+</head-connection>
+<tail-connection>
+<ref refid="b1d2776b-0c94-11f1-8fe3-f5cbf6b4fed4"/>
+</tail-connection>
+</SysML:RefineItem>
+<SysML:RequirementItem id="b1d2776b-0c94-11f1-8fe3-f5cbf6b4fed4">
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 1160.0307516302942, 131.18685080908932)</val>
+</matrix>
+<top-left>
+<val>(0.0, 0.0)</val>
+</top-left>
+<width>
+<val>210.85608919001834</val>
+</width>
+<height>
+<val>151.0</val>
+</height>
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<subject>
+<ref refid="b1d36465-0c94-11f1-9757-f5cbf6b4fed4"/>
+</subject>
+</SysML:RequirementItem>
+<SysML:Requirement id="b1d36465-0c94-11f1-9757-f5cbf6b4fed4">
+<externalId>
+<val>D2.4</val>
+</externalId>
+<name>
+<val>Verkehrswegnutzung</val>
+</name>
+<owningPackage>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</owningPackage>
+<package>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</package>
+<presentation>
+<reflist>
+<ref refid="b1d2776b-0c94-11f1-8fe3-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<targetDirectedRelationshipPropertyPath_>
+<reflist>
+<ref refid="b1d44eea-0c94-11f1-be43-f5cbf6b4fed4"/>
+</reflist>
+</targetDirectedRelationshipPropertyPath_>
+<text>
+<val>Die Brücke soll sowohl vom motorisierten als auch von Fußgängerverkehr genutzt werden.</val>
+</text>
+</SysML:Requirement>
+<SysML:Refine id="b1d44eea-0c94-11f1-be43-f5cbf6b4fed4">
+<presentation>
+<reflist>
+<ref refid="ac790e43-0c94-11f1-a81d-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<sourceContext>
+<ref refid="6877fd10-029c-11f1-bdcf-03f8d9ae9d69"/>
+</sourceContext>
+<targetContext>
+<ref refid="b1d36465-0c94-11f1-9757-f5cbf6b4fed4"/>
+</targetContext>
+</SysML:Refine>
+<SysML:RequirementItem id="eb3e0777-0c94-11f1-8bca-f5cbf6b4fed4">
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 161.97581998966928, 131.18685080908932)</val>
+</matrix>
+<top-left>
+<val>(0.0, 0.0)</val>
+</top-left>
+<width>
+<val>189.0001220703125</val>
+</width>
+<height>
+<val>117.0</val>
+</height>
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<subject>
+<ref refid="eb3f4b6d-0c94-11f1-b7d6-f5cbf6b4fed4"/>
+</subject>
+</SysML:RequirementItem>
+<SysML:Requirement id="eb3f4b6d-0c94-11f1-b7d6-f5cbf6b4fed4">
+<externalId>
+<val>D2.5</val>
+</externalId>
+<name>
+<val>Flachgründung</val>
+</name>
+<owningPackage>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</owningPackage>
+<package>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</package>
+<presentation>
+<reflist>
+<ref refid="eb3e0777-0c94-11f1-8bca-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<targetDirectedRelationshipPropertyPath_>
+<reflist>
+<ref refid="eb40634b-0c94-11f1-9a8b-f5cbf6b4fed4"/>
+</reflist>
+</targetDirectedRelationshipPropertyPath_>
+<text>
+<val>Das Fundament soll flach gegründet werden.</val>
+</text>
+</SysML:Requirement>
+<SysML:Refine id="eb40634b-0c94-11f1-9a8b-f5cbf6b4fed4">
+<presentation>
+<reflist>
+<ref refid="096588aa-0c95-11f1-a23e-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<sourceContext>
+<ref refid="6877fd10-029c-11f1-bdcf-03f8d9ae9d69"/>
+</sourceContext>
+<targetContext>
+<ref refid="eb3f4b6d-0c94-11f1-b7d6-f5cbf6b4fed4"/>
+</targetContext>
+</SysML:Refine>
+<SysML:RefineItem id="096588aa-0c95-11f1-a23e-f5cbf6b4fed4">
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<horizontal>
+<val>False</val>
+</horizontal>
+<orthogonal>
+<val>False</val>
+</orthogonal>
+<subject>
+<ref refid="eb40634b-0c94-11f1-9a8b-f5cbf6b4fed4"/>
+</subject>
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 680.8670349121094, 37.718632116524475)</val>
+</matrix>
+<points>
+<val>[(2.300933837890625, 1.42578125), (-424.39115388728385, 1.42578125), (-424.39115388728385, 93.46821869256485)]</val>
+</points>
+<head-connection>
+<ref refid="6895f5ef-029c-11f1-8ad0-03f8d9ae9d69"/>
+</head-connection>
+<tail-connection>
+<ref refid="eb3e0777-0c94-11f1-8bca-f5cbf6b4fed4"/>
+</tail-connection>
+</SysML:RefineItem>
+<SysML:RequirementItem id="257281b1-0c95-11f1-9ecb-f5cbf6b4fed4">
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 324.5740661621094, 358.8743578710084)</val>
+</matrix>
+<top-left>
+<val>(0.0, 0.0)</val>
+</top-left>
+<width>
+<val>262.4878439154504</val>
+</width>
+<height>
+<val>151.0</val>
+</height>
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<subject>
+<ref refid="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4"/>
+</subject>
+</SysML:RequirementItem>
+<SysML:Requirement id="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4">
+<externalId>
+<val>D2.1.2</val>
+</externalId>
+<name>
+<val>Dehnfugen</val>
+</name>
+<owningPackage>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</owningPackage>
+<package>
+<ref refid="012edaba-70f5-11ec-aabc-f47b099bf663"/>
+</package>
+<presentation>
+<reflist>
+<ref refid="257281b1-0c95-11f1-9ecb-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<targetDirectedRelationshipPropertyPath_>
+<reflist>
+<ref refid="25748099-0c95-11f1-87db-f5cbf6b4fed4"/>
+<ref refid="34c5b1f4-0c96-11f1-8a07-f5cbf6b4fed4"/>
+</reflist>
+</targetDirectedRelationshipPropertyPath_>
+<text>
+<val>An den Übergängen zwischen Balken und Wiederlagern sollen Dehnfügen die Längenveränderungen aufnehmen.</val>
+</text>
+</SysML:Requirement>
+<SysML:Refine id="25748099-0c95-11f1-87db-f5cbf6b4fed4">
+<sourceContext>
+<ref refid="6877fd10-029c-11f1-bdcf-03f8d9ae9d69"/>
+</sourceContext>
+<targetContext>
+<ref refid="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4"/>
+</targetContext>
+</SysML:Refine>
+<SysML:RefineItem id="33185b4f-0c96-11f1-870a-f5cbf6b4fed4">
+<diagram>
+<ref refid="01a97fa8-70f6-11ec-aabc-f47b099bf663"/>
+</diagram>
+<horizontal>
+<val>False</val>
+</horizontal>
+<orthogonal>
+<val>False</val>
+</orthogonal>
+<subject>
+<ref refid="34c5b1f4-0c96-11f1-8a07-f5cbf6b4fed4"/>
+</subject>
+<matrix>
+<val>(1.0, 0.0, 0.0, 1.0, 504.4647521972656, 278.95010689989334)</val>
+</matrix>
+<points>
+<val>[(0.0, 3.236743909195951), (0.0, 79.92425097111504)]</val>
+</points>
+<head-connection>
+<ref refid="27bf7187-02a0-11f1-9a5a-03f8d9ae9d69"/>
+</head-connection>
+<tail-connection>
+<ref refid="257281b1-0c95-11f1-9ecb-f5cbf6b4fed4"/>
+</tail-connection>
+</SysML:RefineItem>
+<SysML:Refine id="34c5b1f4-0c96-11f1-8a07-f5cbf6b4fed4">
+<presentation>
+<reflist>
+<ref refid="33185b4f-0c96-11f1-870a-f5cbf6b4fed4"/>
+</reflist>
+</presentation>
+<sourceContext>
+<ref refid="27bf2c8f-02a0-11f1-9629-03f8d9ae9d69"/>
+</sourceContext>
+<targetContext>
+<ref refid="25738e8c-0c95-11f1-b94f-f5cbf6b4fed4"/>
 </targetContext>
 </SysML:Refine>
 </model>
