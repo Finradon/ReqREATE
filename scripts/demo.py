@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import rhino3dm as r3d
@@ -28,6 +30,47 @@ from reqre.gh import (
 )
 from reqre.neo4j import Neo4jClient
 from reqre.rules import DpoRule
+
+_ANSI = {
+    "reset": "\033[0m",
+    "cyan": "\033[36m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "red": "\033[31m",
+    "bold": "\033[1m",
+}
+
+
+def _supports_color() -> bool:
+    return sys.stdout.isatty() and not str(os.environ.get("NO_COLOR", "")).strip()
+
+
+def _style(text: str, *names: str) -> str:
+    if not _supports_color():
+        return text
+    prefix = "".join(_ANSI[name] for name in names if name in _ANSI)
+    return f"{prefix}{text}{_ANSI['reset']}"
+
+
+def _log_step(message: str) -> None:
+    print(_style(f"[STEP] {message}", "bold", "cyan"))
+
+
+def _log_success(message: str) -> None:
+    print(_style(f"[SUCCESS] {message}", "green"))
+
+
+def _log_info(message: str) -> None:
+    print(_style(f"[INFO] {message}", "cyan"))
+
+
+def _log_warn(message: str) -> None:
+    print(_style(f"[WARN] {message}", "yellow"))
+
+
+def _log_error(message: str) -> None:
+    print(_style(f"[ERROR] {message}", "red"))
+
 
 CONFIG = {
     "gaphor_files": [
@@ -128,7 +171,7 @@ def _allowed_definitions_for_detail(detail_level: str) -> tuple[str, ...]:
 def _apply_rule(client: Neo4jClient, rule_path: Path, rule: DpoRule) -> None:
     cypher = rule_to_cypher(rule)
     client.execute(cypher.query, cypher.params)
-    print(f"Applied {rule_path.name}.")
+    _log_success(f"Applied {rule_path.name}.")
 
 
 def _run_d2_module_length_resolver(
@@ -143,7 +186,7 @@ def _run_d2_module_length_resolver(
         module_length=float(CONFIG["module_length"]),
         length_param=str(CONFIG["d2_length_param"]),
     )
-    print(
+    _log_info(
         "D2 girder length "
         f"{plan.girder_length:.3f} mm -> "
         f"{plan.target_modules} module(s) at {plan.module_length:.3f} mm each. "
@@ -157,7 +200,7 @@ def _run_d2_module_length_resolver(
         )
 
     if plan.insertions_required <= 0:
-        print("No additional module decomposition steps required.")
+        _log_info("No additional module decomposition steps required.")
         return
 
     # Apply decomposition one step at a time and assert +1 module per step.
@@ -186,7 +229,7 @@ def _run_d2_module_length_resolver(
         module_length=float(CONFIG["module_length"]),
         length_param=str(CONFIG["d2_length_param"]),
     )
-    print(
+    _log_success(
         f"Applied {module_decomp_path.name} "
         f"{plan.insertions_required} time(s). "
         f"Final modules: {final_plan.current_modules}."
@@ -219,14 +262,14 @@ def _run_rules_per_module_count(
     # Run each rule once per currently present D3 module.
     module_count = _count_d2_modules(client)
     if module_count <= 0:
-        print("No D3 girder modules found; skipping per-module rules.")
+        _log_warn("No D3 girder modules found; skipping per-module rules.")
         return
 
     for rule_path, rule in zip(rule_paths, rules):
         cypher = rule_to_cypher(rule)
         for _ in range(module_count):
             client.execute(cypher.query, cypher.params)
-        print(f"Applied {rule_path.name} {module_count} time(s).")
+        _log_success(f"Applied {rule_path.name} {module_count} time(s).")
 
 
 def _attrs(name: str, color: tuple[int, int, int, int]) -> r3d.ObjectAttributes:
@@ -385,12 +428,12 @@ def _apply_rule_n_times(
 ) -> None:
     run_count = max(0, int(count))
     if run_count == 0:
-        print(f"Skipped {rule_path.name} (0 time(s)).")
+        _log_warn(f"Skipped {rule_path.name} (0 time(s)).")
         return
     cypher = rule_to_cypher(rule)
     for _ in range(run_count):
         client.execute(cypher.query, cypher.params)
-    print(f"Applied {rule_path.name} {run_count} time(s).")
+    _log_success(f"Applied {rule_path.name} {run_count} time(s).")
 
 
 def _slug_step_name(step_name: str) -> str:
@@ -412,13 +455,13 @@ def _snapshot_step(
     path = _join_snapshot_path(snapshot_dir, filename)
     if outcome.missing_definitions:
         missing = ", ".join(outcome.missing_definitions)
-        print(f"Snapshot '{step_name}': missing definitions: {missing}")
+        _log_warn(f"Snapshot '{step_name}': missing definitions: {missing}")
     if outcome.connected and outcome.components:
         components = outcome.components
     else:
         components = {}
         reason = outcome.reason or "No assembled geometry."
-        print(f"Snapshot '{step_name}': assembly incomplete ({reason})")
+        _log_warn(f"Snapshot '{step_name}': assembly incomplete ({reason})")
 
     _write_3dm(
         path,
@@ -426,7 +469,7 @@ def _snapshot_step(
         show_interface_axes=bool(CONFIG["show_interface_axes_3dm"]),
         interface_axis_length=float(CONFIG["interface_axis_length"]),
     )
-    print(f"Wrote snapshot 3DM: {path}")
+    _log_success(f"Wrote snapshot 3DM: {path}")
 
 
 def _pause_for_graph_screenshot(step_name: str) -> None:
@@ -436,7 +479,7 @@ def _pause_for_graph_screenshot(step_name: str) -> None:
     try:
         input(prompt)
     except EOFError:
-        print("No interactive stdin detected; continuing without pause.")
+        _log_warn("No interactive stdin detected; continuing without pause.")
 
 
 def main() -> None:
@@ -467,7 +510,9 @@ def main() -> None:
         relationships.extend(load_requirement_relationships_from_file(gaphor_path))
 
     if not requirements:
-        print("No requirements found in:", ", ".join(p.name for p in gaphor_paths))
+        _log_error(
+            "No requirements found in: " + ", ".join(p.name for p in gaphor_paths)
+        )
         return
 
     # Load all rule groups up front so validation errors fail fast.
@@ -510,7 +555,7 @@ def main() -> None:
         total = push_requirements_to_neo4j(client, requirements)
         rel_total = push_requirement_relationships_to_neo4j(client, relationships)
 
-        print(
+        _log_info(
             f"Pushed {total} requirements and {rel_total} relationships "
             f"from {len(gaphor_paths)} Gaphor file(s)."
         )
@@ -532,7 +577,7 @@ def main() -> None:
             )
             _pause_for_graph_screenshot(step_name)
 
-        # Stage 1: D1 model (2 abutments + 1 girder), first snapshot.
+        _log_step("Stage 1/6 - Build D1 model (2 abutments + 1 girder)")
         for rule_path, rule in zip(d1_stage_rule_paths, d1_stage_rules):
             _apply_rule(client, rule_path, rule)
 
@@ -543,7 +588,7 @@ def main() -> None:
                     CONFIG["write_shared_parameter_nodes"]
                 ),
             )
-            print(
+            _log_success(
                 f"Resolved D1 parameters for {len(resolved)} abutment/girder pair(s)."
             )
         snapshot_and_pause(
@@ -551,7 +596,7 @@ def main() -> None:
         )
 
         if CONFIG["detail_level"] == "D2" and CONFIG["run_d2_module_length_resolver"]:
-            # Stage 2: D2 rules + full module decomposition strategy.
+            _log_step("Stage 2/6 - D2 abutment + girder module decomposition")
             for rule_path, rule in zip(d2_stage_rule_paths, d2_stage_rules):
                 _apply_rule(client, rule_path, rule)
             _run_d2_module_length_resolver(
@@ -561,7 +606,7 @@ def main() -> None:
             )
             snapshot_and_pause("stage2_d2_abutments_and_modules")
 
-            # Stage 3: Kappe.
+            _log_step("Stage 3/6 - Add Kappe")
             _run_rules_per_module_count(
                 client,
                 rule_paths=kappe_rule_paths,
@@ -569,24 +614,24 @@ def main() -> None:
             )
             snapshot_and_pause("stage3_kappe_complete")
 
-            # Stage 4: Expansion joints.
+            _log_step("Stage 4/6 - Add Expansion Joints")
             for rule_path, rule in zip(expansion_rule_paths, expansion_rules):
                 _apply_rule(client, rule_path, rule)
             snapshot_and_pause("stage4_expansion_complete")
 
-            # Stage 5: Foundations.
+            _log_step("Stage 5/6 - Add Foundations")
             for rule_path, rule, count in zip(
                 foundation_rule_paths, foundation_rules, foundation_rule_counts
             ):
                 _apply_rule_n_times(client, rule_path, rule, count)
             snapshot_and_pause("stage5_foundation_complete")
 
-            # Stage 6: Fahrbahn.
+            _log_step("Stage 6/6 - Add Fahrbahn")
             for rule_path, rule in zip(fahrbahn_rule_paths, fahrbahn_rules):
                 _apply_rule(client, rule_path, rule)
             snapshot_and_pause("stage6_fahrbahn_complete")
 
-        print(f"Stepwise demo complete. Snapshots written to: {snapshot_dir}")
+        _log_success(f"Stepwise demo complete. Snapshots written to: {snapshot_dir}")
 
 
 if __name__ == "__main__":
