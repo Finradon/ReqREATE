@@ -90,12 +90,13 @@ CONFIG = {
         "girder_module_d3.json",
     ],
     # Stage order snapshots:
-    # 1) D1 model
-    # 2) D2 abutment+module decomposition
-    # 3) Kappe
-    # 4) Expansion joints
-    # 5) Foundations
-    # 6) Fahrbahn
+    # 1) (pause only) Requirements imported
+    # 2) D1 model
+    # 3) D2 abutment+module decomposition
+    # 4) Kappe
+    # 5) Expansion joints
+    # 6) Foundations
+    # 7) Fahrbahn
     "module_decomp_rule": "girder_module_decomp_d3.json",
     "kappe_rules": [
         "kappe_module_d3_iface5.json",
@@ -577,7 +578,10 @@ def main() -> None:
             )
             _pause_for_graph_screenshot(step_name)
 
-        _log_step("Stage 1/6 - Build D1 model (2 abutments + 1 girder)")
+        _log_step("Stage 1/7 - Requirements imported from Gaphor")
+        _pause_for_graph_screenshot("stage1_requirements_imported")
+
+        _log_step("Stage 2/7 - Build D1 model (2 abutments + 1 girder)")
         for rule_path, rule in zip(d1_stage_rule_paths, d1_stage_rules):
             _apply_rule(client, rule_path, rule)
 
@@ -596,7 +600,7 @@ def main() -> None:
         )
 
         if CONFIG["detail_level"] == "D2" and CONFIG["run_d2_module_length_resolver"]:
-            _log_step("Stage 2/6 - D2 abutment + girder module decomposition")
+            _log_step("Stage 3/7 - D2 abutment + girder module decomposition")
             for rule_path, rule in zip(d2_stage_rule_paths, d2_stage_rules):
                 _apply_rule(client, rule_path, rule)
             _run_d2_module_length_resolver(
@@ -606,7 +610,7 @@ def main() -> None:
             )
             snapshot_and_pause("stage2_d2_abutments_and_modules")
 
-            _log_step("Stage 3/6 - Add Kappe")
+            _log_step("Stage 4/7 - Add Kappe")
             _run_rules_per_module_count(
                 client,
                 rule_paths=kappe_rule_paths,
@@ -614,19 +618,19 @@ def main() -> None:
             )
             snapshot_and_pause("stage3_kappe_complete")
 
-            _log_step("Stage 4/6 - Add Expansion Joints")
+            _log_step("Stage 5/7 - Add Expansion Joints")
             for rule_path, rule in zip(expansion_rule_paths, expansion_rules):
                 _apply_rule(client, rule_path, rule)
             snapshot_and_pause("stage4_expansion_complete")
 
-            _log_step("Stage 5/6 - Add Foundations")
+            _log_step("Stage 6/7 - Add Foundations")
             for rule_path, rule, count in zip(
                 foundation_rule_paths, foundation_rules, foundation_rule_counts
             ):
                 _apply_rule_n_times(client, rule_path, rule, count)
             snapshot_and_pause("stage5_foundation_complete")
 
-            _log_step("Stage 6/6 - Add Fahrbahn")
+            _log_step("Stage 7/7 - Add Fahrbahn")
             for rule_path, rule in zip(fahrbahn_rule_paths, fahrbahn_rules):
                 _apply_rule(client, rule_path, rule)
             snapshot_and_pause("stage6_fahrbahn_complete")
