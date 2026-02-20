@@ -1,4 +1,6 @@
 # ReqREATE
+
+![](ReqREATE.png)
 Requirements Rewriting and Transformation Engine for SysML-driven graph rewriting in Neo4j, with Grasshopper-based geometry assembly.
 
 ## What It Does
