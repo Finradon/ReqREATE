@@ -3,3 +3,4 @@ networkx
 compute_rhino3d
 rhino3dm
 jsonschema
+manim
