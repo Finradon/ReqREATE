@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from reqre.gh import (
+    DEFAULT_COMPUTE_URL,
     GhEvaluationConfig,
     build_default_registry,
     evaluate_definition,
@@ -15,7 +16,6 @@ from reqre.gh import (
 
 GH_FILE = "gh_samples/Girder.gh"
 GH_ROOT = Path("gh_samples")
-COMPUTE_URL = "http://10.152.49.108:6500/"
 
 PARAMS = {
     "GRD_length": 10000.0,
@@ -31,7 +31,7 @@ OUT_PATH = Path("out/girder.stl")
 def main() -> None:
     registry = build_default_registry()
     definition = registry.require(GH_FILE)
-    config = GhEvaluationConfig(compute_url=COMPUTE_URL, gh_root=GH_ROOT)
+    config = GhEvaluationConfig(compute_url=DEFAULT_COMPUTE_URL, gh_root=GH_ROOT)
 
     gh_path = Path(resolve_gh_path(definition.gh_file, config.gh_root))
     if gh_path.suffix.lower() == ".gh":

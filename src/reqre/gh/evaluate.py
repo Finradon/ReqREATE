@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -17,7 +18,7 @@ from .registry import (
     normalize_gh_path,
 )
 
-DEFAULT_COMPUTE_URL = "http://10.152.49.108:6500/"
+DEFAULT_COMPUTE_URL = os.environ.get("REQRE_COMPUTE_URL", "http://localhost:6500/")
 
 
 @dataclass(frozen=True)
