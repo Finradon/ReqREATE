@@ -122,7 +122,10 @@ CONFIG = {
     "write_shared_parameter_nodes": False,
     "compute_url": DEFAULT_COMPUTE_URL,
     "gh_root": "gh_samples",
-    "snapshot_dir": "smb://nas.ads.mwn.de/ga27guz/TUM/3dmsnapshot/",
+    "output": {
+        "snapshot_dir": "smb://nas.ads.mwn.de/ga27guz/TUM/3dmsnapshot/",
+        "smb_tmp_3dm_path": "out/assembly.3dm",
+    },
     "pause_between_steps": True,
     "show_interface_axes_3dm": False,
     "interface_axis_length": 400.0,
@@ -144,6 +147,30 @@ CONFIG = {
         "FoundationD2": (145, 145, 145, 255),
     },
 }
+
+
+def _load_config() -> dict[str, object]:
+    config = dict(CONFIG)
+    config_path = Path(os.environ.get("REQRE_DEMO_CONFIG", "scripts/demo.config.json"))
+    if not config_path.is_absolute():
+        config_path = Path(__file__).resolve().parents[1] / config_path
+    if not config_path.exists():
+        return config
+
+    with config_path.open("r", encoding="utf-8") as handle:
+        file_config = json.load(handle)
+
+    output_overrides = file_config.pop("output", None)
+    if output_overrides is not None:
+        merged_output = dict(config.get("output", {}))
+        merged_output.update(output_overrides)
+        config["output"] = merged_output
+
+    config.update(file_config)
+    return config
+
+
+CONFIG = _load_config()
 
 
 def _load_rule(path: Path) -> DpoRule:
@@ -365,7 +392,7 @@ def _write_3dm(
         _add_interface_visuals(model, components, axis_length=interface_axis_length)
 
     if path.startswith("smb://"):
-        tmp_path = Path("out/assembly.3dm")
+        tmp_path = Path(str(CONFIG["output"]["smb_tmp_3dm_path"]))
         tmp_path.parent.mkdir(parents=True, exist_ok=True)
         if not model.Write(str(tmp_path), 7):
             raise RuntimeError(f"Failed to write temporary 3DM: {tmp_path}")
@@ -487,7 +514,7 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     gaphor_root = repo_root / "gaphor_files"
     rules_root = repo_root / "json_rules"
-    snapshot_dir = str(CONFIG["snapshot_dir"])
+    snapshot_dir = str(CONFIG["output"]["snapshot_dir"])
     _prepare_snapshot_dir(snapshot_dir)
 
     gaphor_paths = [gaphor_root / name for name in CONFIG["gaphor_files"]]

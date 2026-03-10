@@ -1,0 +1,6 @@
+{
+  "output": {
+    "snapshot_dir": "out",
+    "smb_tmp_3dm_path": "out/assembly.3dm"
+  }
+}
