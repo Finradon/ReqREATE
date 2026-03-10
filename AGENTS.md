@@ -15,6 +15,12 @@ Python modules live under `src/reqre/`, scripts under `scripts/`, and tests in `
 - `pre-commit install`: enable local git hooks.
 - `pre-commit run --all-files`: run the full pre-commit suite.
 
+Environment variables used by the repo:
+- Required for Neo4j auth: `NEO4J_USER`, `NEO4J_PASSWORD`
+- Optional Neo4j settings: `NEO4J_URI` (defaults to `bolt://localhost:7687`), `NEO4J_DATABASE`
+- Optional Rhino Compute override: `REQRE_COMPUTE_URL` (defaults to `http://localhost:6500/`)
+- Optional demo config override: `REQRE_DEMO_CONFIG` (defaults to `scripts/demo.config.json`)
+
 ## Coding Style & Naming Conventions
 - Use Python 3 style with 4-space indentation and PEP 8 naming (`snake_case` for functions/variables, `PascalCase` for classes).
 - Keep graph rewriting logic isolated in the `src/reqre/` package; avoid spreading rule logic into scripts or notebooks.

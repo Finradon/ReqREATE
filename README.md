@@ -60,16 +60,30 @@ pip install -e .
 
 Neo4j env vars:
 ```bash
-export NEO4J_URI=bolt://localhost:7687
 export NEO4J_USER=neo4j
-export NEO4J_PASSWORD=neo4jneo4j
+export NEO4J_PASSWORD=password
 ```
+
+Additional environment variables:
+```bash
+export REQRE_COMPUTE_URL=http://localhost:6500/
+# Optional:
+export NEO4J_DATABASE=neo4j
+export REQRE_DEMO_CONFIG=scripts/demo.config.json
+```
+
+Notes:
+- Required for Neo4j auth: `NEO4J_USER`, `NEO4J_PASSWORD`
+- Optional with defaults: `NEO4J_URI` defaults to `bolt://localhost:7687`, `REQRE_COMPUTE_URL` defaults to `http://localhost:6500/`
+- Optional overrides: `NEO4J_DATABASE` selects the target database, `REQRE_DEMO_CONFIG` selects the demo JSON config file
 
 ## Run
 Stepwise orchestration + snapshots:
 ```bash
 python scripts/demo.py
 ```
+
+The demo reads output paths from `scripts/demo.config.json` by default. Override that path with `REQRE_DEMO_CONFIG` if needed.
 
 Rule schema validation:
 ```bash
