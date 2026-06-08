@@ -126,7 +126,6 @@ CONFIG = {
         "snapshot_dir": "smb://nas.ads.mwn.de/ga27guz/TUM/3dmsnapshot/",
         "smb_tmp_3dm_path": "out/assembly.3dm",
     },
-    "pause_between_steps": True,
     "show_interface_axes_3dm": False,
     "interface_axis_length": 400.0,
     "start_name": None,
@@ -500,16 +499,6 @@ def _snapshot_step(
     _log_success(f"Wrote snapshot 3DM: {path}")
 
 
-def _pause_for_graph_screenshot(step_name: str) -> None:
-    if not CONFIG.get("pause_between_steps", True):
-        return
-    prompt = f"[PAUSE] {step_name} done. Capture Neo4j screenshot, then press Enter to continue..."
-    try:
-        input(prompt)
-    except EOFError:
-        _log_warn("No interactive stdin detected; continuing without pause.")
-
-
 def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     gaphor_root = repo_root / "gaphor_files"
@@ -590,7 +579,7 @@ def main() -> None:
 
         step_index = 0
 
-        def snapshot_and_pause(
+        def snapshot_step(
             step_name: str, *, snapshot_config: AssemblyConfig | None = None
         ) -> None:
             nonlocal step_index
@@ -603,10 +592,8 @@ def main() -> None:
                 step_index=step_index,
                 step_name=step_name,
             )
-            _pause_for_graph_screenshot(step_name)
 
         _log_step("Stage 1/7 - Requirements imported from Gaphor")
-        _pause_for_graph_screenshot("stage1_requirements_imported")
 
         _log_step("Stage 2/7 - Build D1 model (2 abutments + 1 girder)")
         for rule_path, rule in zip(d1_stage_rule_paths, d1_stage_rules):
@@ -622,7 +609,7 @@ def main() -> None:
             _log_success(
                 f"Resolved D1 parameters for {len(resolved)} abutment/girder pair(s)."
             )
-        snapshot_and_pause(
+        snapshot_step(
             "stage1_d1_abutments_and_girder", snapshot_config=d1_snapshot_config
         )
 
@@ -635,7 +622,7 @@ def main() -> None:
                 module_decomp_path=module_decomp_path,
                 module_decomp_rule=module_decomp_rule,
             )
-            snapshot_and_pause("stage2_d2_abutments_and_modules")
+            snapshot_step("stage2_d2_abutments_and_modules")
 
             _log_step("Stage 4/7 - Add Kappe")
             _run_rules_per_module_count(
@@ -643,24 +630,24 @@ def main() -> None:
                 rule_paths=kappe_rule_paths,
                 rules=kappe_rules,
             )
-            snapshot_and_pause("stage3_kappe_complete")
+            snapshot_step("stage3_kappe_complete")
 
-            _log_step("Stage 5/7 - Add Expansion Joints")
-            for rule_path, rule in zip(expansion_rule_paths, expansion_rules):
-                _apply_rule(client, rule_path, rule)
-            snapshot_and_pause("stage4_expansion_complete")
+            # _log_step("Stage 5/7 - Add Expansion Joints")
+            # for rule_path, rule in zip(expansion_rule_paths, expansion_rules):
+            #    _apply_rule(client, rule_path, rule)
+            # snapshot_step("stage4_expansion_complete")
 
             _log_step("Stage 6/7 - Add Foundations")
             for rule_path, rule, count in zip(
                 foundation_rule_paths, foundation_rules, foundation_rule_counts
             ):
                 _apply_rule_n_times(client, rule_path, rule, count)
-            snapshot_and_pause("stage5_foundation_complete")
+            snapshot_step("stage5_foundation_complete")
 
             _log_step("Stage 7/7 - Add Fahrbahn")
             for rule_path, rule in zip(fahrbahn_rule_paths, fahrbahn_rules):
                 _apply_rule(client, rule_path, rule)
-            snapshot_and_pause("stage6_fahrbahn_complete")
+            snapshot_step("stage6_fahrbahn_complete")
 
         _log_success(f"Stepwise demo complete. Snapshots written to: {snapshot_dir}")
 

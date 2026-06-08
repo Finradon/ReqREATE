@@ -1,6 +1,6 @@
 {
   "rule_id": "SubstructureDecomp23",
-  "name": "Decompose D1 abutment linked to D1 girder interfaces 1 and 2 into D2 walls",
+  "name": "Decompose D1 abutment linked to D1 girder interfaces 1 and 2 into D2 side and middle walls",
   "nac": [
     {
       "nodes": [
@@ -179,15 +179,6 @@
         }
       },
       {
-        "id": "abutment_1_top_wall",
-        "label": ["BuildingElement", "AbutmentTopWallElement"],
-        "props": {
-          "name": "Abutment1TopWall",
-          "gh_file": "gh_samples/abutment_top_d2.gh",
-          "detail_level": "D2"
-        }
-      },
-      {
         "id": "abutment_2_side_wall_1",
         "label": ["BuildingElement", "AbutmentSideWallElement"],
         "props": {
@@ -211,15 +202,6 @@
         "props": {
           "name": "Abutment2MiddleWall",
           "gh_file": "gh_samples/abutment_middle_d2.gh",
-          "detail_level": "D2"
-        }
-      },
-      {
-        "id": "abutment_2_top_wall",
-        "label": ["BuildingElement", "AbutmentTopWallElement"],
-        "props": {
-          "name": "Abutment2TopWall",
-          "gh_file": "gh_samples/abutment_top_d2.gh",
           "detail_level": "D2"
         }
       }
@@ -259,11 +241,6 @@
         "type": "DECOMPOSES"
       },
       {
-        "source": "abutment_1_top_wall",
-        "target": "abutment_element_d1",
-        "type": "DECOMPOSES"
-      },
-      {
         "source": "abutment_2_side_wall_1",
         "target": "abutment_element_d1",
         "type": "DECOMPOSES"
@@ -275,11 +252,6 @@
       },
       {
         "source": "abutment_2_middle_wall",
-        "target": "abutment_element_d1",
-        "type": "DECOMPOSES"
-      },
-      {
-        "source": "abutment_2_top_wall",
         "target": "abutment_element_d1",
         "type": "DECOMPOSES"
       },
@@ -299,24 +271,6 @@
         "props": {
           "src_interface": "ABT_SD_interface2",
           "dst_interface": "ABT_MD_interface2"
-        }
-      },
-      {
-        "source": "abutment_1_side_wall_1",
-        "target": "abutment_1_top_wall",
-        "type": "INTERFACES",
-        "props": {
-          "src_interface": "ABT_SD_interface3",
-          "dst_interface": "ABT_TOP_interface3"
-        }
-      },
-      {
-        "source": "abutment_1_side_wall_2",
-        "target": "abutment_1_top_wall",
-        "type": "INTERFACES",
-        "props": {
-          "src_interface": "ABT_SD_interface3",
-          "dst_interface": "ABT_TOP_interface2"
         }
       },
       {
@@ -344,24 +298,6 @@
         "props": {
           "src_interface": "ABT_SD_interface2",
           "dst_interface": "ABT_MD_interface2"
-        }
-      },
-      {
-        "source": "abutment_2_side_wall_1",
-        "target": "abutment_2_top_wall",
-        "type": "INTERFACES",
-        "props": {
-          "src_interface": "ABT_SD_interface3",
-          "dst_interface": "ABT_TOP_interface3"
-        }
-      },
-      {
-        "source": "abutment_2_side_wall_2",
-        "target": "abutment_2_top_wall",
-        "type": "INTERFACES",
-        "props": {
-          "src_interface": "ABT_SD_interface3",
-          "dst_interface": "ABT_TOP_interface2"
         }
       },
       {
