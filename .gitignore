@@ -233,3 +233,4 @@ build_bridge.py
 out/
 screenshots/
 logs/
+.DS_Store
