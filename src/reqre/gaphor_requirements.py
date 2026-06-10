@@ -9,17 +9,6 @@ from typing import Any, Iterable, Optional, Sequence
 
 from reqre.neo4j import Neo4jClient
 
-try:
-    from gaphor.core.modeling import ElementFactory
-    from gaphor.services.modelinglanguage import ModelingLanguageService
-    from gaphor.storage.storage import load
-    from gaphor.SysML.sysml import Requirement
-except ImportError as exc:  # pragma: no cover - depends on optional runtime package
-    raise ImportError(
-        "gaphor is required to load .gaphor files. "
-        "Install project dependencies with `uv sync`."
-    ) from exc
-
 
 @dataclass(frozen=True)
 class RequirementRecord:
@@ -42,6 +31,7 @@ class RequirementRelationship:
 
 def load_requirements_from_file(path: str | Path) -> list[RequirementRecord]:
     """Load SysML requirements from a single .gaphor file."""
+    ElementFactory, ModelingLanguageService, load, Requirement = _load_gaphor_runtime()
     source = str(Path(path))
     element_factory = ElementFactory()
     modeling_language = ModelingLanguageService()
@@ -71,6 +61,7 @@ def load_requirement_relationships_from_file(
     path: str | Path,
 ) -> list[RequirementRelationship]:
     """Load requirement-to-requirement relationships from a .gaphor file."""
+    ElementFactory, ModelingLanguageService, load, Requirement = _load_gaphor_runtime()
     source = str(Path(path))
     element_factory = ElementFactory()
     modeling_language = ModelingLanguageService()
@@ -83,7 +74,7 @@ def load_requirement_relationships_from_file(
             continue
         if element.__class__.__name__.endswith("Item"):
             continue
-        rel_pairs = _extract_requirement_relations(element)
+        rel_pairs = _extract_requirement_relations(element, Requirement)
         if not rel_pairs:
             continue
         gaphor_id = _string_or_none(getattr(element, "id", None))
@@ -228,7 +219,25 @@ def _record_to_params(record: RequirementRecord) -> dict[str, Any]:
     }
 
 
-def _extract_requirement_relations(element: Any) -> list[tuple[Any, Any]]:
+def _load_gaphor_runtime() -> tuple[Any, Any, Any, Any]:
+    try:
+        from gaphor.core.modeling import ElementFactory
+        from gaphor.services.modelinglanguage import ModelingLanguageService
+        from gaphor.storage.storage import load
+        from gaphor.SysML.sysml import Requirement
+    except Exception as exc:  # pragma: no cover - depends on optional runtime package
+        raise RuntimeError(
+            "gaphor and its GObject Introspection runtime are required to load "
+            ".gaphor files. Install project dependencies with `uv sync`; on macOS, "
+            "ensure Homebrew's GLib libraries are visible to the Python process."
+        ) from exc
+    return ElementFactory, ModelingLanguageService, load, Requirement
+
+
+def _extract_requirement_relations(
+    element: Any,
+    requirement_type: Any,
+) -> list[tuple[Any, Any]]:
     pairs: list[tuple[Any, Any]] = []
     for source_attr, target_attr in (
         ("sourceContext", "targetContext"),
@@ -237,8 +246,14 @@ def _extract_requirement_relations(element: Any) -> list[tuple[Any, Any]]:
     ):
         if not hasattr(element, source_attr) and not hasattr(element, target_attr):
             continue
-        sources = _collect_requirements(getattr(element, source_attr, None))
-        targets = _collect_requirements(getattr(element, target_attr, None))
+        sources = _collect_requirements(
+            getattr(element, source_attr, None),
+            requirement_type,
+        )
+        targets = _collect_requirements(
+            getattr(element, target_attr, None),
+            requirement_type,
+        )
         if not sources or not targets:
             continue
         for source in sources:
@@ -247,13 +262,13 @@ def _extract_requirement_relations(element: Any) -> list[tuple[Any, Any]]:
     return pairs
 
 
-def _collect_requirements(value: Any) -> list[Any]:
+def _collect_requirements(value: Any, requirement_type: Any) -> list[Any]:
     if value is None:
         return []
-    if isinstance(value, Requirement):
+    if isinstance(value, requirement_type):
         return [value]
     if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
-        return [item for item in value if isinstance(item, Requirement)]
+        return [item for item in value if isinstance(item, requirement_type)]
     return []
 
 

@@ -49,6 +49,28 @@ Arch:
 sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gtksourceview5 libadwaita
 ```
 
+macOS/Homebrew:
+```bash
+brew install glib gobject-introspection gtk4 pango gtksourceview5 libadwaita
+```
+
+If Gaphor fails to load `libglib-2.0.0.dylib` or `libgobject-2.0.0.dylib`, expose the Homebrew GObject Introspection libraries before running Gaphor or the demo:
+```bash
+export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+export GI_TYPELIB_PATH="/opt/homebrew/lib/girepository-1.0:${GI_TYPELIB_PATH:-}"
+```
+
+For fish:
+```fish
+set -gx DYLD_FALLBACK_LIBRARY_PATH /opt/homebrew/lib $DYLD_FALLBACK_LIBRARY_PATH
+set -gx GI_TYPELIB_PATH /opt/homebrew/lib/girepository-1.0 $GI_TYPELIB_PATH
+```
+
+One-shot fish command:
+```fish
+env DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib GI_TYPELIB_PATH=/opt/homebrew/lib/girepository-1.0 uv run python scripts/demo.py
+```
+
 Python setup:
 Install `uv` first if it is not already available, then run:
 ```bash

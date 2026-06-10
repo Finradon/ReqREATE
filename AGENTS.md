@@ -28,6 +28,9 @@
 - Debian/Ubuntu: `sudo apt install libcairo2-dev pkg-config python3-dev libgirepository1.0-dev libgtk-4-dev gir1.2-pango-1.0 libgtksourceview-5-dev gir1.2-adw-1`
 - Fedora: `sudo dnf install cairo-devel pkgconf-pkg-config python3-devel gobject-introspection-devel gtk4-devel pango-devel gtksourceview5-devel libadwaita-devel`
 - Arch: `sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gtksourceview5 libadwaita`
+- macOS/Homebrew: `brew install glib gobject-introspection gtk4 pango gtksourceview5 libadwaita`
+- On macOS, if Gaphor fails to load `libglib-2.0.0.dylib` or `libgobject-2.0.0.dylib`, expose Homebrew GI libraries before running Gaphor/demo commands: bash/zsh `export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"` and `export GI_TYPELIB_PATH="/opt/homebrew/lib/girepository-1.0:${GI_TYPELIB_PATH:-}"`; fish `set -gx DYLD_FALLBACK_LIBRARY_PATH /opt/homebrew/lib $DYLD_FALLBACK_LIBRARY_PATH` and `set -gx GI_TYPELIB_PATH /opt/homebrew/lib/girepository-1.0 $GI_TYPELIB_PATH`.
+- One-shot fish demo command for macOS GI runtime issues: `env DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib GI_TYPELIB_PATH=/opt/homebrew/lib/girepository-1.0 uv run python scripts/demo.py`.
 - `uv run gaphor install-schemas`: run once after installing Gaphor if loading `.gaphor` files.
 - There is currently no checked-in pre-commit config. Do not claim `pre-commit run --all-files` is available unless a config is added.
 
