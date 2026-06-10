@@ -31,6 +31,8 @@ from reqre.gh import (
 from reqre.neo4j import Neo4jClient
 from reqre.rules import DpoRule
 
+RHINO_3DM_VERSION = 8
+
 _ANSI = {
     "reset": "\033[0m",
     "cyan": "\033[36m",
@@ -393,7 +395,7 @@ def _write_3dm(
     if path.startswith("smb://"):
         tmp_path = Path(str(CONFIG["output"]["smb_tmp_3dm_path"]))
         tmp_path.parent.mkdir(parents=True, exist_ok=True)
-        if not model.Write(str(tmp_path), 7):
+        if not model.Write(str(tmp_path), RHINO_3DM_VERSION):
             raise RuntimeError(f"Failed to write temporary 3DM: {tmp_path}")
         try:
             subprocess.run(["gio", "remove", path], check=False)
@@ -411,7 +413,7 @@ def _write_3dm(
 
     out_3dm = Path(path)
     out_3dm.parent.mkdir(parents=True, exist_ok=True)
-    if not model.Write(str(out_3dm), 7):
+    if not model.Write(str(out_3dm), RHINO_3DM_VERSION):
         raise RuntimeError(f"Failed to write 3DM: {out_3dm}")
 
 
