@@ -143,6 +143,8 @@ def register_default_definitions(registry: GhRegistry) -> GhRegistry:
                 GhInput("ABT_MD_length"),
                 GhInput("ABT_MD_thickness"),
                 GhInput("ABT_MD_height"),
+                GhInput("ABT_MD_ledgeheight"),
+                GhInput("ABT_MD_ledgedepth"),
             ),
             brep_output="ABT_MD_brep",
             interface_outputs=(

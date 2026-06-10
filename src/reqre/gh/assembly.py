@@ -52,36 +52,39 @@ def _default_interface_priority() -> dict[str, tuple[int, ...]]:
 
 
 def _default_params() -> dict[str, dict[str, Any]]:
+    bridge_width = 5000.0
     d3_module_length = 1000.0
     return {
         "Abutment": {
             "ABT_height": 5000.0,
-            "ABT_width": 5000.0,
+            "ABT_width": bridge_width,
             "ABT_ledgewidth": 1000.0,
             "ABT_ledgeheight": 500.0,
             "ABT_offset": 500.0,
         },
         "Girder": {
             "GRD_length": 20000.0,
-            "GRD_width": 5000.0,
+            "GRD_width": bridge_width,
             "GRD_height": 500.0,
             "GRD_offset1": 500.0,
             "GRD_offset2": 500.0,
         },
         "AbutmentSideD2": {
-            "ABT_SD_height": 3500.0,
-            "ABT_SD_thickness": 500.0,
-            "ABT_SD_length": 2500.0,
+            "ABT_SD_height": 4000.0,
+            "ABT_SD_thickness": 1000.0,
+            "ABT_SD_length": 4500.0,
             "ABT_SD_angle": 30.0,
             "ABT_SD_middleheight": 3000.0,
         },
         "AbutmentMiddleD2": {
-            "ABT_MD_length": 5000.0,
-            "ABT_MD_thickness": 500.0,
-            "ABT_MD_height": 3000.0,
+            "ABT_MD_length": bridge_width,
+            "ABT_MD_thickness": 1000.0,
+            "ABT_MD_height": 4000.0,
+            "ABT_MD_ledgeheight": 1000.0,
+            "ABT_MD_ledgedepth": 500.0,
         },
         "TGirderD2": {
-            "D2_GRD_width": 5000.0,
+            "D2_GRD_width": bridge_width,
             "D2_GRD_length": 20000.0,
             "D2_GRD_thickness": 500.0,
             "D2_GRD_t_offset": 1000.0,
@@ -91,7 +94,7 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "D2_GRD_iface_offset": 250.0,
         },
         "TGirderModule3": {
-            "D3_GRD_width": 5000.0,
+            "D3_GRD_width": bridge_width,
             "D3_GRD_length": d3_module_length,
             "D3_GRD_thickness": 500.0,
             "D3_GRD_t_offset": 1000.0,
@@ -101,24 +104,24 @@ def _default_params() -> dict[str, dict[str, Any]]:
             "D3_GRD_iface_offset": 250.0,
         },
         "AbutmentTopD2": {
-            "ABT_TOP_width": 5000.0,
+            "ABT_TOP_width": bridge_width,
             "ABT_TOP_length": 4000.0,
             "ABT_TOP_thickness": 500.0,
             "ABT_TOP_offset": 250.0,
         },
         "KappeD3": {
-            "KP_length": 4000.0,
+            "KP_length": d3_module_length,
         },
         "ExpansionD3": {
             "EXP_length": 5000.0,
         },
         "FahrbahnD3": {
-            "FB_width": 3201.0,
+            "FB_width": bridge_width,
             "FB_length": 20000.0,
         },
         "FoundationD2": {
             "FND_length": 3500.0,
-            "FND_width": 5750.0,
+            "FND_width": bridge_width,
             "FND_thickness": 500.0,
             "FND_girth": 750.0,
         },
