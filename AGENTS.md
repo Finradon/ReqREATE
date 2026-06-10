@@ -22,13 +22,13 @@
 - `src/reqre/gh/param_resolver.py`: graph-derived GH parameter synchronization and D2 module-count planning.
 
 ## Setup Commands
-- `python -m venv .venv` then `source .venv/bin/activate`: create and activate a local virtual environment.
+- Install `uv` first if it is not already available on `PATH`.
+- `uv sync --group dev`: create/update the local virtual environment and install runtime plus test dependencies from `pyproject.toml`.
 - Install Gaphor system dependencies before installing Python packages when `.gaphor` import is needed:
 - Debian/Ubuntu: `sudo apt install libcairo2-dev pkg-config python3-dev libgirepository1.0-dev libgtk-4-dev gir1.2-pango-1.0 libgtksourceview-5-dev gir1.2-adw-1`
 - Fedora: `sudo dnf install cairo-devel pkgconf-pkg-config python3-devel gobject-introspection-devel gtk4-devel pango-devel gtksourceview5-devel libadwaita-devel`
 - Arch: `sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gtksourceview5 libadwaita`
-- `pip install -e . -r requirements.txt pytest`: install package dependencies, runtime/demo dependencies, and test runner. `pyproject.toml` provides editable-package deps such as `gaphor`; `requirements.txt` provides Neo4j/Rhino/manim runtime deps.
-- `gaphor install-schemas`: run once after installing Gaphor if loading `.gaphor` files.
+- `uv run gaphor install-schemas`: run once after installing Gaphor if loading `.gaphor` files.
 - There is currently no checked-in pre-commit config. Do not claim `pre-commit run --all-files` is available unless a config is added.
 
 ## Environment Variables
@@ -39,17 +39,17 @@
 - Keep credentials in environment variables or ignored local files. Do not commit secrets or machine-specific paths.
 
 ## Verification
-- `pytest`: run the full unit test suite. Most tests are pure Python and do not require live Neo4j or Rhino Compute.
-- `pytest tests/test_cypher.py tests/test_rules.py tests/test_schema.py`: fast DPO/rule serialization checks after rule-model or schema changes.
-- `pytest tests/test_gh_assembly.py tests/test_gh_param_resolver.py tests/test_gh_util.py`: GH assembly/parameter utility checks after GH path changes.
-- `python scripts/validate_rules.py json_rules`: validate all JSON rules against the schema and `DpoRule.from_json`.
-- `python scripts/demo.py`: integration/demo workflow only. It resets Neo4j demo state, requires Neo4j credentials, Gaphor schemas, Rhino Compute for assembly, and may write snapshots to configured local/SMB paths.
+- `uv run pytest`: run the full unit test suite. Most tests are pure Python and do not require live Neo4j or Rhino Compute.
+- `uv run pytest tests/test_cypher.py tests/test_rules.py tests/test_schema.py`: fast DPO/rule serialization checks after rule-model or schema changes.
+- `uv run pytest tests/test_gh_assembly.py tests/test_gh_param_resolver.py tests/test_gh_util.py`: GH assembly/parameter utility checks after GH path changes.
+- `uv run python scripts/validate_rules.py json_rules`: validate all JSON rules against the schema and `DpoRule.from_json`.
+- `uv run python scripts/demo.py`: integration/demo workflow only. It resets Neo4j demo state, requires Neo4j credentials, Gaphor schemas, Rhino Compute for assembly, and may write snapshots to configured local/SMB paths.
 
 ## Coding Style
 - Use Python 3.9+ compatible syntax, 4-space indentation, PEP 8 names (`snake_case` functions/variables, `PascalCase` classes).
 - Keep graph-rewriting behavior in `src/reqre/`; keep orchestration in `scripts/`.
 - Prefer small, explicit dataclasses and pure helpers where practical; tests in this repo commonly construct minimal NetworkX or GH fixture objects directly.
-- When adding dependencies, update `pyproject.toml` for package/import requirements and `requirements.txt` for demo/runtime extras if needed.
+- When adding dependencies, update `pyproject.toml`; use project dependencies for runtime/demo imports and the `dev` dependency group for test/development tools.
 - Do not rewrite notebooks or generated outputs for ordinary source changes.
 
 ## Testing Guidelines

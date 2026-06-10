@@ -50,12 +50,10 @@ sudo pacman -S --needed cairo pkgconf python gobject-introspection gtk4 pango gt
 ```
 
 Python setup:
+Install `uv` first if it is not already available, then run:
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-gaphor install-schemas
-pip install -e .
+uv sync --group dev
+uv run gaphor install-schemas
 ```
 
 Neo4j env vars:
@@ -80,19 +78,19 @@ Notes:
 ## Run
 Stepwise orchestration + snapshots:
 ```bash
-python scripts/demo.py
+uv run python scripts/demo.py
 ```
 
 The demo reads output paths from `scripts/demo.config.json` by default. Override that path with `REQRE_DEMO_CONFIG` if needed.
 
 Rule schema validation:
 ```bash
-python scripts/validate_rules.py json_rules/<rule>.json
+uv run python scripts/validate_rules.py json_rules/<rule>.json
 ```
 
 Tests:
 ```bash
-pytest
+uv run pytest
 ```
 
 ## Rule Format

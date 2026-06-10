@@ -17,7 +17,7 @@ try:
 except ImportError as exc:  # pragma: no cover - depends on optional runtime package
     raise ImportError(
         "gaphor is required to load .gaphor files. "
-        "Install it with `pip install gaphor`."
+        "Install project dependencies with `uv sync`."
     ) from exc
 
 

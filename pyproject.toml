@@ -8,7 +8,20 @@ version = "0.0.0"
 description = "Requirements rewriting engine."
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = ["gaphor", "networkx", "jsonschema"]
+dependencies = [
+    "compute-rhino3d",
+    "gaphor",
+    "jsonschema",
+    "manim",
+    "neo4j",
+    "networkx",
+    "rhino3dm",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
 
 [tool.setuptools.package-data]
 reqre = ["schemas/*.schema.json"]
