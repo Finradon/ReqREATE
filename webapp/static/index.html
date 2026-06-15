@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>ReqREATE</title>
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="stylesheet" href="/styles.css" />
+        <script
+            type="module"
+            src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+        ></script>
+        <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    </head>
+    <body>
+        <div class="shell">
+            <aside class="panel">
+                <div class="brand">
+                    <img
+                        src="/logo.svg"
+                        class="brand-logo"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <div>
+                        <h1>ReqREATE</h1>
+                        <p class="eyebrow">Live Rule Studio</p>
+                    </div>
+                </div>
+
+                <section class="card status-card">
+                    <div class="section-head">
+                        <h2>Graph State</h2>
+                        <span id="busyBadge" class="badge">Idle</span>
+                    </div>
+                    <div class="metrics">
+                        <div>
+                            <span id="nodeCount">-</span>
+                            <small>Nodes</small>
+                        </div>
+                        <div>
+                            <span id="buildingCount">-</span>
+                            <small>Elements</small>
+                        </div>
+                        <div>
+                            <span id="moduleCount">-</span>
+                            <small>D2 Modules</small>
+                        </div>
+                    </div>
+                    <p id="statusText" class="muted">
+                        Connect to Neo4j, then reset.
+                    </p>
+                </section>
+
+                <section class="card controls-card">
+                    <div class="section-head">
+                        <h2>Workflow</h2>
+                        <span id="stepBadge" class="badge badge-soft"
+                            >Step 0</span
+                        >
+                    </div>
+                    <label class="field">
+                        <span>Preview Detail</span>
+                        <select id="previewDetail">
+                            <option value="auto">Auto: D2 then D1</option>
+                            <option value="d2">D2 only</option>
+                            <option value="d1">D1 only</option>
+                        </select>
+                    </label>
+                    <div class="button-grid">
+                        <button id="resetBtn" class="primary">
+                            Reset From Gaphor
+                        </button>
+                        <button id="previewBtn" class="secondary">
+                            Refresh Preview
+                        </button>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="section-head">
+                        <h2>Bridge Parameters</h2>
+                        <span class="badge badge-soft">mm</span>
+                    </div>
+                    <div class="parameter-grid">
+                        <label class="field">
+                            <span>Length</span>
+                            <input
+                                id="bridgeLength"
+                                type="number"
+                                min="1000"
+                                step="100"
+                                value="20000"
+                            />
+                        </label>
+                        <label class="field">
+                            <span>Width</span>
+                            <input
+                                id="bridgeWidth"
+                                type="number"
+                                min="1000"
+                                step="100"
+                                value="10000"
+                            />
+                        </label>
+                        <label class="field">
+                            <span>Height</span>
+                            <input
+                                id="bridgeHeight"
+                                type="number"
+                                min="100"
+                                step="50"
+                                value="4000"
+                            />
+                        </label>
+                    </div>
+                    <p class="muted compact">
+                        Used as GH defaults unless a graph node already carries
+                        an explicit parameter.
+                    </p>
+                </section>
+
+                <section class="card">
+                    <div class="section-head">
+                        <h2>Apply Rule</h2>
+                    </div>
+                    <label class="field">
+                        <span>Rule</span>
+                        <select id="ruleSelect"></select>
+                    </label>
+                    <label class="field">
+                        <span>Repeat</span>
+                        <input
+                            id="repeatInput"
+                            type="number"
+                            min="1"
+                            max="100"
+                            value="1"
+                        />
+                    </label>
+                    <button id="applyRuleBtn" class="primary wide">
+                        Apply Selected Rule
+                    </button>
+                </section>
+
+                <section class="card">
+                    <div class="section-head">
+                        <h2>Demo Shortcuts</h2>
+                    </div>
+                    <div id="actionList" class="action-list"></div>
+                </section>
+            </aside>
+
+            <main class="stage">
+                <div class="hero">
+                    <div>
+                        <p class="eyebrow">
+                            Interactive graph rewriting preview
+                        </p>
+                    </div>
+                    <div id="configPill" class="config-pill">
+                        Neo4j: bolt://localhost:7687
+                    </div>
+                </div>
+
+                <section class="viewer-card">
+                    <model-viewer
+                        id="modelViewer"
+                        camera-controls
+                        touch-action="pan-y"
+                        exposure="0.9"
+                        shadow-intensity="0.75"
+                        environment-image="neutral"
+                        ar
+                    ></model-viewer>
+                    <div id="emptyState" class="empty-state">
+                        <div class="pulse-ring"></div>
+                        <h3>No model preview yet</h3>
+                        <p>
+                            Reset the graph from the configured Gaphor files,
+                            then apply the D1/D2 rules or choose a rule
+                            manually.
+                        </p>
+                    </div>
+                    <div id="loader" class="loader hidden">
+                        <div class="spinner"></div>
+                        <p id="loaderText">Running rule execution...</p>
+                    </div>
+                </section>
+
+                <section class="card graph-card">
+                    <div class="section-head">
+                        <div>
+                            <h2>Neo4j Graph</h2>
+                            <p id="graphSummary" class="muted compact">
+                                Waiting for graph data. Use wheel/pinch to zoom
+                                and drag to pan.
+                            </p>
+                        </div>
+                        <button
+                            id="refreshGraphBtn"
+                            class="secondary small-button"
+                        >
+                            Refresh Graph
+                        </button>
+                    </div>
+                    <div class="graph-layout">
+                        <div class="graph-network-shell">
+                            <div id="graphNetwork" class="graph-network"></div>
+                            <div id="graphEmpty" class="graph-empty">
+                                Graph data will appear here after Neo4j is
+                                reachable or the graph is initialized.
+                            </div>
+                        </div>
+                        <aside class="graph-detail">
+                            <h3 id="graphDetailTitle">Select a node or edge</h3>
+                            <pre id="graphDetailBody">
+No graph item selected.</pre
+                            >
+                        </aside>
+                    </div>
+                </section>
+
+                <section class="bottom-grid">
+                    <div class="card preview-card">
+                        <div class="section-head">
+                            <h2>Preview</h2>
+                            <span id="previewBadge" class="badge badge-soft"
+                                >No GLB</span
+                            >
+                        </div>
+                        <dl class="preview-meta">
+                            <div>
+                                <dt>Detail</dt>
+                                <dd id="previewDetailText">-</dd>
+                            </div>
+                            <div>
+                                <dt>Components</dt>
+                                <dd id="previewComponents">-</dd>
+                            </div>
+                            <div>
+                                <dt>Root</dt>
+                                <dd id="previewRoot">-</dd>
+                            </div>
+                        </dl>
+                        <p id="previewReason" class="muted"></p>
+                    </div>
+
+                    <div class="card history-card">
+                        <div class="section-head">
+                            <h2>Execution History</h2>
+                        </div>
+                        <ol id="historyList"></ol>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <div id="toast" class="toast hidden"></div>
+        <script src="/app.js" type="module"></script>
+    </body>
+</html>

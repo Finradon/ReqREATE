@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <rect x="3" y="3" width="194" height="194" rx="30" ry="30" fill="#f2ede3" stroke="#1c1e1a" stroke-width="6"/>
+
+  <!-- Lines drawn first, behind everything -->
+
+  <!-- Vertical stubs (ports on requirement nodes) -->
+  <line x1="41" y1="55" x2="41" y2="68" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="41" y1="114" x2="41" y2="127" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Interface circles → hub -->
+  <line x1="73" y1="46" x2="103" y2="91" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="75" y1="100" x2="102" y2="100" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="73" y1="154" x2="103" y2="109" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Hub → output circles -->
+  <line x1="118" y1="92" x2="147" y2="56" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="121" y1="100" x2="142" y2="100" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="118" y1="108" x2="147" y2="144" stroke="#1c1e1a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Requirement rectangles -->
+  <rect x="14" y="28" width="54" height="27" rx="5" ry="5" fill="#1c1e1a"/>
+  <rect x="14" y="87" width="54" height="27" rx="5" ry="5" fill="#1c1e1a"/>
+  <rect x="14" y="146" width="54" height="27" rx="5" ry="5" fill="#1c1e1a"/>
+
+  <!-- Interface nodes (white circles at right edge of each rect) -->
+  <circle cx="68" cy="41"  r="6.5" fill="white" stroke="#1c1e1a" stroke-width="3.5"/>
+  <circle cx="68" cy="100" r="6.5" fill="white" stroke="#1c1e1a" stroke-width="3.5"/>
+  <circle cx="68" cy="159" r="6.5" fill="white" stroke="#1c1e1a" stroke-width="3.5"/>
+
+  <!-- Central rewriting hub -->
+  <circle cx="111" cy="100" r="9" fill="white" stroke="#1c1e1a" stroke-width="4.5"/>
+
+  <!-- Output model circles: D1 (blue), D2 (orange), D3 (green) -->
+  <circle cx="165" cy="38"  r="23" fill="#18a8e8"/>
+  <circle cx="165" cy="100" r="23" fill="#e85718"/>
+  <circle cx="165" cy="162" r="23" fill="#42cc42"/>
+</svg>
