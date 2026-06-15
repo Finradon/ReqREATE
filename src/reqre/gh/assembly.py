@@ -133,6 +133,67 @@ def _default_interface_map() -> dict[tuple[str, str, str], tuple[Any, Any]]:
 
 
 @dataclass(frozen=True)
+class BridgeParameters:
+    """Top-level bridge dimensions used as GH parameter defaults (all in mm).
+
+    A ``None`` value means "not set" and the definition-level default from
+    ``AssemblyConfig.default_params`` is used instead.
+    """
+
+    length: float | None = None  # bridge span length
+    width: float | None = None  # bridge deck width
+    height: float | None = None  # bridge clearance / abutment height
+
+
+def _apply_bridge_parameters(
+    params: dict[str, dict[str, Any]],
+    bridge: BridgeParameters | None,
+) -> dict[str, dict[str, Any]]:
+    """Return a shallow copy of *params* with values from *bridge* merged in.
+
+    Only keys that already exist in *params* are touched; definitions absent
+    from *params* are silently skipped.
+    """
+    if bridge is None:
+        return params
+    result: dict[str, dict[str, Any]] = {k: dict(v) for k, v in params.items()}
+    w, length, h = bridge.width, bridge.length, bridge.height
+
+    _width_keys: list[tuple[str, str]] = [
+        ("Abutment", "ABT_width"),
+        ("Girder", "GRD_width"),
+        ("AbutmentMiddleD2", "ABT_MD_length"),
+        ("AbutmentTopD2", "ABT_TOP_width"),
+        ("TGirderD2", "D2_GRD_width"),
+        ("TGirderModule3", "D3_GRD_width"),
+        ("FahrbahnD3", "FB_width"),
+        ("FoundationD2", "FND_width"),
+    ]
+    _length_keys: list[tuple[str, str]] = [
+        ("Girder", "GRD_length"),
+        ("TGirderD2", "D2_GRD_length"),
+        ("FahrbahnD3", "FB_length"),
+    ]
+    _height_keys: list[tuple[str, str]] = [
+        ("Abutment", "ABT_height"),
+        ("AbutmentSideD2", "ABT_SD_height"),
+        ("AbutmentMiddleD2", "ABT_MD_height"),
+    ]
+
+    for defn, key in _width_keys:
+        if w is not None and defn in result:
+            result[defn][key] = w
+    for defn, key in _length_keys:
+        if length is not None and defn in result:
+            result[defn][key] = length
+    for defn, key in _height_keys:
+        if h is not None and defn in result:
+            result[defn][key] = h
+
+    return result
+
+
+@dataclass(frozen=True)
 class AssemblyConfig:
     detail_level: str
     compute_url: str = DEFAULT_COMPUTE_URL
@@ -150,6 +211,7 @@ class AssemblyConfig:
     start_element_name: str | None = None
     allow_interface_reuse: bool = False
     flip_normals: bool = True
+    bridge_parameters: BridgeParameters | None = None
 
 
 @dataclass
@@ -238,6 +300,9 @@ def assemble_elements(
     used_ifaces: dict[NodeId, set[int]] = {}
     order: list[NodeId] = []
 
+    effective_params = _apply_bridge_parameters(
+        config.default_params, config.bridge_parameters
+    )
     eval_config = GhEvaluationConfig(
         compute_url=config.compute_url, gh_root=config.gh_root
     )
@@ -246,7 +311,7 @@ def assemble_elements(
         elements_by_id[root_id],
         definitions[root_id],
         eval_config,
-        config.default_params,
+        effective_params,
     )
     placed[root_id] = root_comp
     used_ifaces[root_id] = set()
@@ -284,7 +349,7 @@ def assemble_elements(
             elements_by_id[neighbor_id],
             neighbor_def,
             eval_config,
-            config.default_params,
+            effective_params,
         )
         neighbor_used = used_ifaces.setdefault(neighbor_id, set())
 

@@ -72,6 +72,7 @@
 - `additionalProperties` is `false` for rule objects, graphs, nodes, and edges; put custom data inside `metadata` or `props`.
 - DPO invariants enforced by `rule_to_cypher`: `interface` must be a subgraph of both `left` and `right`; nodes or edges present in both `left` and `right` must be in `interface`; preserved node labels/props must stay identical.
 - Nodes labeled `BuildingElement` must include `props.gh_file` and `props.detail_level`; supported detail levels are `D1`, `D2`, and `D3`.
+- Each Json rule must include comment briefly explaining the rule's purpose.
 
 ## GraphML Rules
 - GraphML export/import stores all DPO roles in one combined graph with reserved metadata keys such as `reqre_roles`, `reqre_props`, `reqre_labels`, and `reqre_edge_key`.

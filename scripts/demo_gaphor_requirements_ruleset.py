@@ -20,12 +20,12 @@ CONFIG = {
         "Sample1.gaphor",
     ],
     "json_rules": [
-        "ReqD1-1.json",
-        "SubstructureDecomp.json",
-        "ReqD2-1.json",
-        "ReqD2-1-1.json",
-        "SubstructureDecomp2.json",
-        "SubstructureDecomp3.json",
+        "requirements/satisfy_d1_1_bridge.json",
+        "substructure/decompose_substructure_abutment.json",
+        "requirements/satisfy_d2_1_girder.json",
+        "requirements/satisfy_d2_1_1_girder_element.json",
+        "substructure/decompose_abutment_d1_if1.json",
+        "substructure/decompose_abutment_d1_if2.json",
     ],
 }
 

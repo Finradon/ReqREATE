@@ -3,6 +3,7 @@
 from .assembly import (
     AssemblyConfig,
     AssemblyOutcome,
+    BridgeParameters,
     assemble_elements,
     assemble_from_graph,
 )
@@ -43,10 +44,12 @@ from .registry import (
     UnknownGhDefinition,
     normalize_gh_path,
 )
+from .util import write_assembly_glb
 
 __all__ = [
     "AssemblyConfig",
     "AssemblyOutcome",
+    "BridgeParameters",
     "assemble_elements",
     "assemble_from_graph",
     "DEFAULT_COMPUTE_URL",
@@ -61,6 +64,7 @@ __all__ = [
     "MissingGhParameters",
     "UnknownGhDefinition",
     "build_default_registry",
+    "write_assembly_glb",
     "evaluate_definition",
     "evaluate_element",
     "fetch_building_elements",

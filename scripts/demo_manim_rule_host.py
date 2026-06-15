@@ -39,7 +39,7 @@ from manim import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-RULE_PATH = REPO_ROOT / "json_rules" / "ReqD1-1.json"
+RULE_PATH = REPO_ROOT / "json_rules" / "requirements" / "satisfy_d1_1_bridge.json"
 
 try:
     from reqre.rules import DpoRule, RuleGraph, add_edge, add_node
@@ -640,7 +640,7 @@ def _build_rule_panel(rule: DpoRule) -> RulePanel:
 
 
 class HostRuleRewriteScene(Scene):
-    """Apply ReqD1-1 to a mock host graph and animate before/after."""
+    """Apply satisfy_d1_1_bridge to a mock host graph and animate before/after."""
 
     def construct(self) -> None:
         loaded = _load_rule(RULE_PATH)

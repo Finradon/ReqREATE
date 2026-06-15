@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from reqre.neo4j import Neo4jClient
 
-from .assembly import AssemblyConfig
+from .assembly import AssemblyConfig, BridgeParameters
 
 _D1_PAIR_QUERY = """
 MATCH (a:BuildingElement:AbutmentElement)-[r:INTERFACES]->(g:BuildingElement:GirderElement)
@@ -410,6 +410,7 @@ def resolve_d2_module_plan(
     *,
     module_length: float,
     length_param: str = "D2_GRD_length",
+    bridge_parameters: BridgeParameters | None = None,
 ) -> D2ModulePlan:
     """Resolve how many module-insertion rewrites are needed for a D2 girder."""
     module_length_value = _as_float(module_length)
@@ -421,8 +422,7 @@ def resolve_d2_module_plan(
         raise RuntimeError("No D2 t_girder_d2 BuildingElement found in graph.")
     if len(rows) != 1:
         raise RuntimeError(
-            "Expected exactly one D2 t_girder_d2 BuildingElement, "
-            f"found {len(rows)}."
+            f"Expected exactly one D2 t_girder_d2 BuildingElement, found {len(rows)}."
         )
 
     row = rows[0]
@@ -438,9 +438,13 @@ def resolve_d2_module_plan(
     d2_defaults = AssemblyConfig(detail_level="D2").default_params.get("TGirderD2", {})
     default_length = _as_float(d2_defaults.get(length_param))
 
+    bridge_length = (
+        _as_float(bridge_parameters.length) if bridge_parameters is not None else None
+    )
     girder_length = _pick_float(
         girder_params.get(length_param),
         girder_props.get(length_param),
+        bridge_length,
         default_length,
     )
     if girder_length is None or girder_length <= 0:

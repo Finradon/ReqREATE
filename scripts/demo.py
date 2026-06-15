@@ -80,16 +80,16 @@ CONFIG = {
     ],
     # Stage 1: D1 bridge model.
     "d1_stage_rules": [
-        "ReqD1-1.json",
-        "SubstructureDecompD1.json",
-        "ReqD2-1.json",
+        "requirements/satisfy_d1_1_bridge.json",
+        "substructure/decompose_substructure_abutment.json",
+        "requirements/satisfy_d2_1_girder.json",
     ],
     # Stage 2: D2 decomposition and initial D3 module insertion.
     "d2_stage_rules": [
-        "ReqD2-1-1.json",
-        "SubstructureDecomp2.json",
-        "SubstructureDecomp3.json",
-        "girder_module_d3.json",
+        "requirements/satisfy_d2_1_1_girder_element.json",
+        "substructure/decompose_abutment_d1_if1.json",
+        "substructure/decompose_abutment_d1_if2.json",
+        "modules/girder/seed_girder_module_d3.json",
     ],
     # Stage order snapshots:
     # 1) (pause only) Requirements imported
@@ -99,20 +99,20 @@ CONFIG = {
     # 5) Expansion joints
     # 6) Foundations
     # 7) Fahrbahn
-    "module_decomp_rule": "girder_module_decomp_d3.json",
+    "module_decomp_rule": "modules/girder/grow_girder_module_d3.json",
     "kappe_rules": [
-        "kappe_module_d3_iface5.json",
-        "kappe_module_d3_iface6.json",
+        "modules/attachments/attach_kappe_d3_if5.json",
+        "modules/attachments/attach_kappe_d3_if6.json",
     ],
     "expansion_rules": [
-        "expansion_module_d3_from_if2.json",
-        "expansion_module_d3_from_if1.json",
+        "modules/attachments/attach_expansion_d3_if2.json",
+        "modules/attachments/attach_expansion_d3_if1.json",
     ],
     "foundation_rules": [
-        {"file": "foundation_module_d2.json", "times": 2},
+        {"file": "modules/foundation/attach_foundation_d2_middle_wall.json", "times": 2},
     ],
     "fahrbahn_rules": [
-        "fahrbahn_module_d3_from_if2.json",
+        "modules/attachments/attach_fahrbahn_d3_if2.json",
     ],
     "run_d2_module_length_resolver": True,
     "d2_length_param": "D2_GRD_length",
@@ -225,7 +225,8 @@ def _run_d2_module_length_resolver(
     if plan.current_modules == 0 and plan.target_modules > 0:
         raise RuntimeError(
             "No D3 modules found for the D2 girder. "
-            "Apply girder_module_d3.json before module decomposition."
+            "Apply the configured initial girder module rule before module "
+            "decomposition."
         )
 
     if plan.insertions_required <= 0:

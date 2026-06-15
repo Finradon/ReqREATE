@@ -30,8 +30,8 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     gaphor_path = repo_root / "gaphor_files" / "Sample1.gaphor"
     rule_paths = [
-        repo_root / "json_rules" / "ReqD1-1.json",
-        repo_root / "json_rules" / "ReqD2-1.json",
+        repo_root / "json_rules" / "requirements" / "satisfy_d1_1_bridge.json",
+        repo_root / "json_rules" / "requirements" / "satisfy_d2_1_girder.json",
     ]
 
     requirements = load_requirements_from_file(gaphor_path)

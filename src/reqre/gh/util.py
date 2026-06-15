@@ -1,4 +1,6 @@
 # util.py
+from __future__ import annotations
+
 import json
 import math
 import os
@@ -419,3 +421,253 @@ def write_stl(path: str, breps: list[r3d.Brep]) -> None:
                         f.write("    endloop\n")
                         f.write("  endfacet\n")
         f.write("endsolid gh-assembler\n")
+
+
+def write_assembly_glb(
+    path: str,
+    components: dict,
+    *,
+    definition_colors: dict | None = None,
+) -> None:
+    """Write assembled breps as a binary glTF 2.0 (GLB) file.
+
+    Parameters
+    ----------
+    path:
+        Destination path for the ``.glb`` file. Parent directories are
+        created automatically.
+    components:
+        Mapping of node ID -> component dict as returned by
+        :func:`~reqre.gh.assembly.assemble_elements`.  Each entry must have a
+        ``"brep"`` key (``rhino3dm.Brep``) and a ``"definition"`` key.
+    definition_colors:
+        Optional mapping from definition name to an RGBA 4-tuple of ints
+        0–255.  Used as the ``baseColorFactor`` for each glTF material.
+    """
+    import struct
+
+    colors: dict = dict(definition_colors) if definition_colors else {}
+
+    # ------------------------------------------------------------------
+    # Shared mesh helpers (mirrors patterns in write_obj / write_stl)
+    # ------------------------------------------------------------------
+    def _c(seq):
+        if hasattr(seq, "Count"):
+            return seq.Count
+        try:
+            return len(seq)
+        except Exception:
+            return 0
+
+    def _it(seq, idx):
+        try:
+            return seq[idx]
+        except Exception:
+            return seq.Item(idx)
+
+    def _tris(face) -> list:
+        if hasattr(face, "A"):
+            a, b, c = face.A, face.B, face.C
+            d = getattr(face, "D", c)
+            if getattr(face, "IsQuad", False) and d != c:
+                return [(a, b, c), (a, c, d)]
+            return [(a, b, c)]
+        if isinstance(face, (list, tuple)):
+            if len(face) >= 4:
+                return [(face[0], face[1], face[2]), (face[0], face[2], face[3])]
+            if len(face) == 3:
+                return [(face[0], face[1], face[2])]
+        raise TypeError(f"Unsupported face type: {type(face)}")
+
+    # ------------------------------------------------------------------
+    # Collect geometry grouped by definition name so each definition
+    # becomes one glTF mesh / material.
+    # ------------------------------------------------------------------
+    mat_geom: dict[str, dict] = {}
+
+    for _nid, comp in sorted(components.items()):
+        brep = comp.get("brep")
+        if not isinstance(brep, r3d.Brep):
+            continue
+        definition = comp.get("definition")
+        def_name: str = getattr(definition, "name", None) or "Unknown"
+        rgba = tuple(colors.get(def_name, (200, 200, 200, 255)))
+
+        if def_name not in mat_geom:
+            mat_geom[def_name] = {"rgba": rgba, "positions": [], "indices": []}
+        entry = mat_geom[def_name]
+
+        for mesh in _brep_meshes(brep):
+            base = len(entry["positions"])
+            vcount = _c(mesh.Vertices)
+            for i in range(vcount):
+                v = _it(mesh.Vertices, i)
+                entry["positions"].append((float(v.X), float(v.Y), float(v.Z)))
+            fcount = _c(mesh.Faces)
+            for i in range(fcount):
+                for a, b, c in _tris(_it(mesh.Faces, i)):
+                    entry["indices"].extend(
+                        [base + int(a), base + int(b), base + int(c)]
+                    )
+
+    # ------------------------------------------------------------------
+    # Build the binary buffer and glTF JSON document.
+    # ------------------------------------------------------------------
+    bin_data = bytearray()
+    buffer_views: list[dict] = []
+    accessors: list[dict] = []
+    gltf_meshes: list[dict] = []
+    materials: list[dict] = []
+    nodes: list[dict] = []
+
+    def _pad4(buf: bytearray, pad_byte: int = 0) -> None:
+        r = len(buf) % 4
+        if r:
+            buf.extend(bytes([pad_byte] * (4 - r)))
+
+    for def_name, geom in mat_geom.items():
+        positions: list = geom["positions"]
+        indices: list = geom["indices"]
+        if not positions or not indices:
+            continue
+
+        r_v, g_v, b_v, a_v = geom["rgba"]
+
+        # Pack float32 positions.
+        flat_pos = [coord for p in positions for coord in p]
+        pos_bytes = struct.pack(f"<{len(flat_pos)}f", *flat_pos)
+        pos_bv_offset = len(bin_data)
+        bin_data.extend(pos_bytes)
+        _pad4(bin_data)
+
+        # Pack uint32 indices.
+        idx_bytes = struct.pack(f"<{len(indices)}I", *indices)
+        idx_bv_offset = len(bin_data)
+        bin_data.extend(idx_bytes)
+        _pad4(bin_data)
+
+        xs = [p[0] for p in positions]
+        ys = [p[1] for p in positions]
+        zs = [p[2] for p in positions]
+
+        pos_bv_idx = len(buffer_views)
+        buffer_views.append(
+            {
+                "buffer": 0,
+                "byteOffset": pos_bv_offset,
+                "byteLength": len(pos_bytes),
+                "target": 34962,  # ARRAY_BUFFER
+            }
+        )
+        idx_bv_idx = len(buffer_views)
+        buffer_views.append(
+            {
+                "buffer": 0,
+                "byteOffset": idx_bv_offset,
+                "byteLength": len(idx_bytes),
+                "target": 34963,  # ELEMENT_ARRAY_BUFFER
+            }
+        )
+
+        pos_acc_idx = len(accessors)
+        accessors.append(
+            {
+                "bufferView": pos_bv_idx,
+                "byteOffset": 0,
+                "componentType": 5126,  # FLOAT
+                "count": len(positions),
+                "type": "VEC3",
+                "min": [min(xs), min(ys), min(zs)],
+                "max": [max(xs), max(ys), max(zs)],
+            }
+        )
+        idx_acc_idx = len(accessors)
+        accessors.append(
+            {
+                "bufferView": idx_bv_idx,
+                "byteOffset": 0,
+                "componentType": 5125,  # UNSIGNED_INT
+                "count": len(indices),
+                "type": "SCALAR",
+            }
+        )
+
+        mat_idx = len(materials)
+        materials.append(
+            {
+                "name": def_name,
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": [
+                        r_v / 255.0,
+                        g_v / 255.0,
+                        b_v / 255.0,
+                        a_v / 255.0,
+                    ],
+                    "metallicFactor": 0.0,
+                    "roughnessFactor": 0.8,
+                },
+                "doubleSided": True,
+            }
+        )
+
+        mesh_idx = len(gltf_meshes)
+        gltf_meshes.append(
+            {
+                "name": def_name,
+                "primitives": [
+                    {
+                        "attributes": {"POSITION": pos_acc_idx},
+                        "indices": idx_acc_idx,
+                        "material": mat_idx,
+                    }
+                ],
+            }
+        )
+        nodes.append({"name": def_name, "mesh": mesh_idx})
+
+    gltf_doc: dict = {
+        "asset": {"version": "2.0", "generator": "reqre/write_assembly_glb"},
+        "scene": 0,
+        "scenes": [{"nodes": list(range(len(nodes)))}],
+    }
+    if nodes:
+        gltf_doc["nodes"] = nodes
+        gltf_doc["meshes"] = gltf_meshes
+        gltf_doc["materials"] = materials
+        gltf_doc["accessors"] = accessors
+        gltf_doc["bufferViews"] = buffer_views
+        gltf_doc["buffers"] = [{"byteLength": len(bin_data)}]
+
+    _write_glb(str(path), gltf_doc, bytes(bin_data) if nodes else b"")
+
+
+def _write_glb(path: str, gltf_doc: dict, bin_data: bytes) -> None:
+    """Pack *gltf_doc* and *bin_data* into a GLB container and write to *path*."""
+    import json as _json
+    import struct
+
+    json_bytes = _json.dumps(gltf_doc, separators=(",", ":")).encode("utf-8")
+    json_pad = (4 - len(json_bytes) % 4) % 4
+    json_chunk_data = json_bytes + b" " * json_pad
+
+    _MAGIC = 0x46546C67  # b"glTF"
+    _VERSION = 2
+    _JSON_TYPE = 0x4E4F534A  # b"JSON"
+    _BIN_TYPE = 0x004E4942  # b"BIN\0"
+
+    json_chunk = struct.pack("<II", len(json_chunk_data), _JSON_TYPE) + json_chunk_data
+
+    bin_chunk = b""
+    if bin_data:
+        bin_pad = (4 - len(bin_data) % 4) % 4
+        bin_chunk_data = bin_data + b"\x00" * bin_pad
+        bin_chunk = struct.pack("<II", len(bin_chunk_data), _BIN_TYPE) + bin_chunk_data
+
+    total = 12 + len(json_chunk) + len(bin_chunk)
+    header = struct.pack("<III", _MAGIC, _VERSION, total)
+
+    out_dir = os.path.dirname(path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    with open(path, "wb") as fh:
+        fh.write(header + json_chunk + bin_chunk)
