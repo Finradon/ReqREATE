@@ -1,0 +1,141 @@
+{
+  "rule_id": "attach_foundation_d2_middle_wall",
+  "description": "Attach one D2 foundation element to a D2 abutment middle wall for requirement D2.5 unless that interface is already used.",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d2_5",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.5"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_5",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.5"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ]
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_5",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.5"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "foundation_element",
+        "label": [
+          "BuildingElement",
+          "FoundationElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/foundation_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "req_d2_5",
+        "target": "foundation_element",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "foundation_element",
+        "target": "abutment_middle_wall",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_middle_wall",
+        "target": "foundation_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface3",
+          "dst_interface": "FND_interface1"
+        }
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "abutment_middle_wall",
+          "label": [
+            "BuildingElement",
+            "AbutmentMiddleWallElement"
+          ],
+          "props": {
+            "gh_file": "gh_samples/abutment_middle_d2.gh",
+            "detail_level": "D2"
+          }
+        },
+        {
+          "id": "foundation_existing",
+          "label": [
+            "BuildingElement",
+            "FoundationElement"
+          ],
+          "props": {
+            "gh_file": "gh_samples/foundation_d2.gh",
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "abutment_middle_wall",
+          "target": "foundation_existing",
+          "type": "INTERFACES",
+          "props": {
+            "src_interface": "ABT_MD_interface3",
+            "dst_interface": "FND_interface1"
+          }
+        }
+      ]
+    }
+  ]
+}

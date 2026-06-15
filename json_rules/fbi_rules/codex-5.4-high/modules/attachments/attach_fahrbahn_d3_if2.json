@@ -1,0 +1,254 @@
+{
+  "rule_id": "attach_fahrbahn_d3_if2",
+  "description": "Attach a D2 Fahrbahn element to a D2 girder module at interface 7 when the adjoining abutment middle wall and expansion attachment pattern is present and no identical Fahrbahn attachment already exists.",
+  "left": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "expansion_element",
+        "label": [
+          "BuildingElement",
+          "ExpansionElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/expansion_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_middle_wall",
+        "target": "girder_module",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface2"
+        }
+      },
+      {
+        "source": "girder_module",
+        "target": "expansion_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface3",
+          "dst_interface": "EXP_interface2"
+        }
+      },
+      {
+        "source": "expansion_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "expansion_element",
+        "label": [
+          "BuildingElement",
+          "ExpansionElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/expansion_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_middle_wall",
+        "target": "girder_module",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface2"
+        }
+      },
+      {
+        "source": "girder_module",
+        "target": "expansion_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface3",
+          "dst_interface": "EXP_interface2"
+        }
+      },
+      {
+        "source": "expansion_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "girder_module",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "expansion_element",
+        "label": [
+          "BuildingElement",
+          "ExpansionElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/expansion_d3.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "fahrbahn_element",
+        "label": [
+          "BuildingElement",
+          "FahrbahnElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/fahrbahn_d3.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_middle_wall",
+        "target": "girder_module",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface2"
+        }
+      },
+      {
+        "source": "girder_module",
+        "target": "expansion_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface3",
+          "dst_interface": "EXP_interface2"
+        }
+      },
+      {
+        "source": "expansion_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "fahrbahn_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "girder_module",
+        "target": "fahrbahn_element",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface7",
+          "dst_interface": "FB_interface1"
+        }
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "girder_module",
+          "label": [
+            "BuildingElement",
+            "GirderElement"
+          ],
+          "props": {
+            "gh_file": "gh_samples/t_girder_module_d3.gh",
+            "detail_level": "D2"
+          }
+        },
+        {
+          "id": "fahrbahn_element",
+          "label": [
+            "BuildingElement",
+            "FahrbahnElement"
+          ],
+          "props": {
+            "gh_file": "gh_samples/fahrbahn_d3.gh",
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "girder_module",
+          "target": "fahrbahn_element",
+          "type": "INTERFACES",
+          "props": {
+            "src_interface": "D3_GRD_interface7",
+            "dst_interface": "FB_interface1"
+          }
+        }
+      ]
+    }
+  ]
+}

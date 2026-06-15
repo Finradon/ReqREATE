@@ -1,0 +1,105 @@
+{
+  "rule_id": "satisfy_d2_1_1_girder_element",
+  "description": "Create a D2 girder building element that satisfies requirement D2.1.1 unless the requirement already satisfies another element.",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d2_1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1.1"
+        }
+      },
+      {
+        "id": "fe_girder",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Girder"
+        }
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1.1"
+        }
+      },
+      {
+        "id": "fe_girder",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Girder"
+        }
+      }
+    ]
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.1.1"
+        }
+      },
+      {
+        "id": "fe_girder",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Girder"
+        }
+      },
+      {
+        "id": "be_girder_element",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "req_d2_1_1",
+        "target": "be_girder_element",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "be_girder_element",
+        "target": "fe_girder",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "req_d2_1_1",
+          "label": "Requirement",
+          "props": {
+            "external_id": "D2.1.1"
+          }
+        },
+        {
+          "id": "existing_satisfier"
+        }
+      ],
+      "edges": [
+        {
+          "source": "req_d2_1_1",
+          "target": "existing_satisfier",
+          "type": "SATISFIES"
+        }
+      ]
+    }
+  ]
+}
