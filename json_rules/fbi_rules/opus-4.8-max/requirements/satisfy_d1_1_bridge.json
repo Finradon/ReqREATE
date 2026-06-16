@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "rule_id": "satisfy_d1_1_bridge",
+  "name": "Satisfy D1.1 with Bridge decomposition",
+  "description": "Satisfy requirement D1.1 with a Bridge functional element decomposed into Substructure, Superstructure, and Foundation, unless D1.1 is already satisfied.",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D1.1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D1.1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d1_1",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D1.1"
+        }
+      },
+      {
+        "id": "bridge",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Bridge"
+        }
+      },
+      {
+        "id": "substructure",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Substructure"
+        }
+      },
+      {
+        "id": "superstructure",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Superstructure"
+        }
+      },
+      {
+        "id": "foundation",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Foundation"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "req_d1_1",
+        "target": "bridge",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "substructure",
+        "target": "bridge",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "superstructure",
+        "target": "bridge",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "foundation",
+        "target": "bridge",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "req_d1_1",
+          "label": "Requirement",
+          "props": {
+            "external_id": "D1.1"
+          }
+        },
+        {
+          "id": "existing_satisfier",
+          "label": "FunctionalElement"
+        }
+      ],
+      "edges": [
+        {
+          "source": "req_d1_1",
+          "target": "existing_satisfier",
+          "type": "SATISFIES"
+        }
+      ]
+    }
+  ]
+}

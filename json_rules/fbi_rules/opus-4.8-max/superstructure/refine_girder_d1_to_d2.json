@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "rule_id": "refine_girder_d1_to_d2",
+  "name": "Refine Girder D1 to D2",
+  "description": "Refine a D1 girder element into a D2 girder element that decomposes it, unless a matching D2 girder element already decomposes the D1 element.",
+  "left": {
+    "nodes": [
+      {
+        "id": "girder_element_d1",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "girder_element_d1",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "girder_element_d1",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "name": "GirderElement",
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "girder_element_d2",
+        "target": "girder_element_d1",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "girder_element_d1",
+          "label": ["BuildingElement", "GirderElement"],
+          "props": {
+            "name": "GirderElement",
+            "gh_file": "gh_samples/Girder.gh",
+            "detail_level": "D1"
+          }
+        },
+        {
+          "id": "existing_girder_element_d2",
+          "label": ["BuildingElement", "GirderElement"],
+          "props": {
+            "gh_file": "gh_samples/t_girder_d2.gh",
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "existing_girder_element_d2",
+          "target": "girder_element_d1",
+          "type": "DECOMPOSES"
+        }
+      ]
+    }
+  ]
+}

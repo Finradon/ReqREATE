@@ -1,0 +1,280 @@
+{
+  "rule_id": "decompose_abutment_d1_if1",
+  "description": "Decompose a D1 abutment interfacing with a D1 girder into D2 side walls and a middle wall, unless a D2 middle wall already decomposes that abutment.",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "abutment_element_d1",
+        "label": [
+          "BuildingElement",
+          "AbutmentElement"
+        ],
+        "props": {
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d1",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_element_d1",
+        "target": "girder_element_d1",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_interface2",
+          "dst_interface": "GRD_interface1"
+        }
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "abutment_element_d1",
+        "label": [
+          "BuildingElement",
+          "AbutmentElement"
+        ],
+        "props": {
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d1",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_element_d1",
+        "target": "girder_element_d1",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_interface2",
+          "dst_interface": "GRD_interface1"
+        }
+      }
+    ]
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "abutment_element_d1",
+        "label": [
+          "BuildingElement",
+          "AbutmentElement"
+        ],
+        "props": {
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d1",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/Girder.gh",
+          "detail_level": "D1"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": [
+          "BuildingElement",
+          "GirderElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_1_side_wall_1",
+        "label": [
+          "BuildingElement",
+          "AbutmentSideWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_side_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_1_side_wall_2",
+        "label": [
+          "BuildingElement",
+          "AbutmentSideWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_side_d2.gh",
+          "detail_level": "D2"
+        }
+      },
+      {
+        "id": "abutment_1_middle_wall",
+        "label": [
+          "BuildingElement",
+          "AbutmentMiddleWallElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh",
+          "detail_level": "D2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment_element_d1",
+        "target": "girder_element_d1",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_interface2",
+          "dst_interface": "GRD_interface1"
+        }
+      },
+      {
+        "source": "req_d2_2",
+        "target": "abutment_1_middle_wall",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "abutment_1_side_wall_1",
+        "target": "abutment_element_d1",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_1_side_wall_2",
+        "target": "abutment_element_d1",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_1_middle_wall",
+        "target": "abutment_element_d1",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_1_side_wall_1",
+        "target": "abutment_1_middle_wall",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_SD_interface2",
+          "dst_interface": "ABT_MD_interface1"
+        }
+      },
+      {
+        "source": "abutment_1_side_wall_2",
+        "target": "abutment_1_middle_wall",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_SD_interface2",
+          "dst_interface": "ABT_MD_interface2"
+        }
+      },
+      {
+        "source": "abutment_1_middle_wall",
+        "target": "girder_element_d2",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D2_GRD_interface1"
+        }
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "abutment_element_d1",
+          "label": [
+            "BuildingElement",
+            "AbutmentElement"
+          ],
+          "props": {
+            "detail_level": "D1"
+          }
+        },
+        {
+          "id": "abutment_1_middle_wall",
+          "label": [
+            "BuildingElement",
+            "AbutmentMiddleWallElement"
+          ],
+          "props": {
+            "gh_file": "gh_samples/abutment_middle_d2.gh",
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "abutment_1_middle_wall",
+          "target": "abutment_element_d1",
+          "type": "DECOMPOSES"
+        }
+      ]
+    }
+  ]
+}

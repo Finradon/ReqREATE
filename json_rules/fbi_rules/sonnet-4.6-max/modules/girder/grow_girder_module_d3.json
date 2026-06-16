@@ -1,0 +1,165 @@
+{
+  "rule_id": "grow_girder_module_d3",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": "GirderElement",
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh"
+        }
+      },
+      {
+        "id": "girder_module_current",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_tail",
+        "label": "AbutmentMiddleWallElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "girder_module_current",
+        "target": "girder_element_d2",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_middle_wall_tail",
+        "target": "girder_module_current",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface1"
+        }
+      }
+    ]
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": "GirderElement",
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh"
+        }
+      },
+      {
+        "id": "girder_module_current",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_tail",
+        "label": "AbutmentMiddleWallElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "girder_module_current",
+        "target": "girder_element_d2",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_element_d2",
+        "label": "GirderElement",
+        "props": {
+          "gh_file": "gh_samples/t_girder_d2.gh"
+        }
+      },
+      {
+        "id": "girder_module_current",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      },
+      {
+        "id": "abutment_middle_wall_tail",
+        "label": "AbutmentMiddleWallElement",
+        "props": {
+          "gh_file": "gh_samples/abutment_middle_d2.gh"
+        }
+      },
+      {
+        "id": "girder_module_new",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "girder_module_current",
+        "target": "girder_element_d2",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "req_d2_2",
+        "target": "girder_module_new",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "girder_module_new",
+        "target": "girder_element_d2",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "girder_module_current",
+        "target": "girder_module_new",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "D3_GRD_interface4",
+          "dst_interface": "D3_GRD_interface3"
+        }
+      },
+      {
+        "source": "abutment_middle_wall_tail",
+        "target": "girder_module_new",
+        "type": "INTERFACES",
+        "props": {
+          "src_interface": "ABT_MD_interface4",
+          "dst_interface": "D3_GRD_interface1"
+        }
+      }
+    ]
+  },
+  "nac": []
+}

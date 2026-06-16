@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "rule_id": "satisfy_d1_1_bridge",
+  "name": "Satisfy D1.1 with Bridge functional decomposition",
+  "description": "Creates a Bridge FunctionalElement satisfying requirement D1.1 and decomposes it into Substructure, Superstructure, and Foundation.",
+  "nac": [
+    {
+      "nodes": [
+        { "id": "req_d1_1", "label": "Requirement", "props": { "external_id": "D1.1" } },
+        { "id": "satisfier" }
+      ],
+      "edges": [
+        { "source": "req_d1_1", "target": "satisfier", "type": "SATISFIES" }
+      ]
+    }
+  ],
+  "left": {
+    "nodes": [
+      { "id": "req_d1_1", "label": "Requirement", "props": { "external_id": "D1.1" } }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      { "id": "req_d1_1" }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      { "id": "req_d1_1", "label": "Requirement", "props": { "external_id": "D1.1" } },
+      { "id": "bridge", "label": "FunctionalElement", "props": { "name": "Bridge" } },
+      { "id": "substructure", "label": "FunctionalElement", "props": { "name": "Substructure" } },
+      { "id": "superstructure", "label": "FunctionalElement", "props": { "name": "Superstructure" } },
+      { "id": "foundation", "label": "FunctionalElement", "props": { "name": "Foundation" } }
+    ],
+    "edges": [
+      { "source": "req_d1_1", "target": "bridge", "type": "SATISFIES" },
+      { "source": "substructure", "target": "bridge", "type": "DECOMPOSES" },
+      { "source": "superstructure", "target": "bridge", "type": "DECOMPOSES" },
+      { "source": "foundation", "target": "bridge", "type": "DECOMPOSES" }
+    ]
+  }
+}

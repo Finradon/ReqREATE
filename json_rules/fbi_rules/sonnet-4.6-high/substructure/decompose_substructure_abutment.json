@@ -1,0 +1,110 @@
+{
+  "rule_id": "decompose_substructure_abutment",
+  "description": "Decomposes a Substructure functional element into an Abutment functional element with two D1 abutment building elements, unless an Abutment already decomposes the Substructure.",
+  "left": {
+    "nodes": [
+      {
+        "id": "substructure",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Substructure"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "substructure"
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "substructure",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Substructure"
+        }
+      },
+      {
+        "id": "abutment",
+        "label": "FunctionalElement",
+        "props": {
+          "name": "Abutment"
+        }
+      },
+      {
+        "id": "abutment_element_1",
+        "label": [
+          "BuildingElement",
+          "AbutmentElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "detail_level": "D1",
+          "name": "AbutmentElement1"
+        }
+      },
+      {
+        "id": "abutment_element_2",
+        "label": [
+          "BuildingElement",
+          "AbutmentElement"
+        ],
+        "props": {
+          "gh_file": "gh_samples/abutment_d1.gh",
+          "detail_level": "D1",
+          "name": "AbutmentElement2"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "abutment",
+        "target": "substructure",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_element_1",
+        "target": "abutment",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "abutment_element_2",
+        "target": "abutment",
+        "type": "DECOMPOSES"
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "substructure",
+          "label": "FunctionalElement",
+          "props": {
+            "name": "Substructure"
+          }
+        },
+        {
+          "id": "abutment",
+          "label": "FunctionalElement",
+          "props": {
+            "name": "Abutment"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "abutment",
+          "target": "substructure",
+          "type": "DECOMPOSES"
+        }
+      ]
+    }
+  ]
+}

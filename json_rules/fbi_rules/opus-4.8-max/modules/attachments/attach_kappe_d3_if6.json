@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "rule_id": "attach_kappe_d3_if6",
+  "name": "Attach Kappe to D3 girder module (interface variant 6)",
+  "description": "Attach a D2 Kappe element to a D2 girder module, satisfying requirements D2.4 and D2.2, decomposing the girder module, and interfacing via D3_GRD_interface5 -> KP_interface1, unless the girder module already interfaces with a Kappe element on that interface pair.",
+  "left": {
+    "nodes": [
+      {
+        "id": "req_d2_4",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.4"
+        }
+      },
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "detail_level": "D2",
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "interface": {
+    "nodes": [
+      {
+        "id": "req_d2_4",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.4"
+        }
+      },
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "detail_level": "D2",
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "right": {
+    "nodes": [
+      {
+        "id": "req_d2_4",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.4"
+        }
+      },
+      {
+        "id": "req_d2_2",
+        "label": "Requirement",
+        "props": {
+          "external_id": "D2.2"
+        }
+      },
+      {
+        "id": "girder_module",
+        "label": ["BuildingElement", "GirderElement"],
+        "props": {
+          "detail_level": "D2",
+          "gh_file": "gh_samples/t_girder_module_d3.gh"
+        }
+      },
+      {
+        "id": "kappe_element",
+        "label": ["BuildingElement", "KappeElement"],
+        "props": {
+          "detail_level": "D2",
+          "gh_file": "gh_samples/kappe_d3.gh"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "req_d2_4",
+        "target": "kappe_element",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "req_d2_2",
+        "target": "kappe_element",
+        "type": "SATISFIES"
+      },
+      {
+        "source": "kappe_element",
+        "target": "girder_module",
+        "type": "DECOMPOSES"
+      },
+      {
+        "source": "girder_module",
+        "target": "kappe_element",
+        "type": "INTERFACES",
+        "props": {
+          "source_interface": "D3_GRD_interface5",
+          "target_interface": "KP_interface1"
+        }
+      }
+    ]
+  },
+  "nac": [
+    {
+      "nodes": [
+        {
+          "id": "girder_module",
+          "label": ["BuildingElement", "GirderElement"],
+          "props": {
+            "detail_level": "D2",
+            "gh_file": "gh_samples/t_girder_module_d3.gh"
+          }
+        },
+        {
+          "id": "existing_kappe_element",
+          "label": ["BuildingElement", "KappeElement"],
+          "props": {
+            "detail_level": "D2"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "girder_module",
+          "target": "existing_kappe_element",
+          "type": "INTERFACES",
+          "props": {
+            "source_interface": "D3_GRD_interface5",
+            "target_interface": "KP_interface1"
+          }
+        }
+      ]
+    }
+  ]
+}
